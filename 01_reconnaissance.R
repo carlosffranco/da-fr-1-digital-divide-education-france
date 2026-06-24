@@ -48,3 +48,42 @@ ips_2023 <- read_delim(
 dim(ips_2023)                       # rows x columns
 names(ips_2023)                     # EXACT column names (verbatim)
 ips_2023 |> count(`Rentrée scolaire`)   # how many cohorts are stacked?
+
+# ── IPS Lycées 2022 — reconnaissance ───────────────────────
+ips_2022 <- read_delim(
+  "data/raw/ips_Lycees_2022.csv",
+  delim      = ";",
+  col_types  = cols(.default = "c"),          # read everything as character
+  locale     = locale(encoding = "UTF-8")
+)
+
+dim(ips_2022)                       # rows x columns
+names(ips_2022)                     # EXACT column names (verbatim)
+ips_2022 |> count(`Rentrée scolaire`)   # how many cohorts?
+
+# ── Filosofi 2021 COM — reconnaissance ─────────────────────
+filosofi <- read_delim(
+  "data/raw/cc_filosofi_2021_COM.csv",
+  delim      = ";",
+  col_types  = cols(.default = "c"),          # read everything as character
+  locale     = locale(encoding = "UTF-8")
+)
+
+dim(filosofi)        # rows x columns
+names(filosofi)      # EXACT column names — look for CODGEO, MED21, TP6021
+
+# ── Bac par département — reconnaissance (Model C only) ─────
+bac_dept <- read_delim(
+  "data/raw/bac_par_departement_2023_2025.csv",
+  delim      = ";",
+  col_types  = cols(.default = "c"),          # read everything as character
+  locale     = locale(encoding = "UTF-8")
+)
+
+dim(bac_dept)        # rows x columns
+names(bac_dept)      # EXACT column names (verbatim)
+
+# ── Flag #6 check: what dimensions split the rows? ─────────
+bac_dept |> count(Voie)     # what 'voie' values exist? (GT / Pro / ensemble?)
+bac_dept |> count(Genre)    # what 'genre' values exist? (M / F / ensemble?)
+bac_dept |> count(Session)  # which years/sessions are covered?
