@@ -87,3 +87,37 @@ names(bac_dept)      # EXACT column names (verbatim)
 bac_dept |> count(Voie)     # what 'voie' values exist? (GT / Pro / ensemble?)
 bac_dept |> count(Genre)    # what 'genre' values exist? (M / F / ensemble?)
 bac_dept |> count(Session)  # which years/sessions are covered?
+
+# ── Annuaire éducation (xlsx) — reconnaissance ─────────────
+library(readxl)   # already loaded, but explicit here for clarity
+
+# Step 1: list the sheets BEFORE reading
+excel_sheets("data/raw/rep_annuaire_edu_V2.xlsx")
+
+# Step 2: read the sheet (everything as text), then inspect
+annuaire <- read_xlsx(
+  "data/raw/rep_annuaire_edu_V2.xlsx",
+  sheet     = "Sheet1",
+  col_types = "text"          # read everything as character (readxl syntax)
+)
+
+dim(annuaire)        # rows x columns
+names(annuaire)      # EXACT column names (verbatim)
+
+# ── AAV2020 urban/rural (xlsx) — reconnaissance ────────────
+# Step 1: list the sheets BEFORE reading
+excel_sheets("data/raw/aav2020_urban_rural.xlsx")
+
+# Step 2 (corrected): real header is on row 6 → skip the first 5 rows
+aav <- read_xlsx(
+  "data/raw/aav2020_urban_rural.xlsx",
+  sheet     = "Composition_communale",
+  skip      = 5,               # skip 5 title/metadata rows; row 6 becomes header
+  col_types = "text"           # preserve CODGEO leading zeros
+)
+
+dim(aav)        # rows x columns
+names(aav)      # EXACT column names — should now show CODGEO, CATEAAV2020, etc.
+
+# ── Inspect the urban/rural category values ────────────────
+aav |> count(CATEAAV2020)   # category codes + distribution (expect 11/12/13/20/30)
