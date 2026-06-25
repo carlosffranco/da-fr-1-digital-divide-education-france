@@ -4,6 +4,20 @@
 **Date:** June 2026
 **Environment:** RStudio Desktop, R 4.5.1 (aarch64)
 
+## Executive Summary
+
+**Objective.** Phase 1, Step 1 verified all 9 datasets against the v3.0 Dataset Guide — confirming dimensions, exact column names, encodings, and join-key integrity — before any transformation or merge.
+
+**Architecture verdict (the blocking question): PANEL.** Both IVAL files (GT and Pro) contain a multi-year panel, **2012–2025** (~one row per school per year), despite their `_2023` filenames. The full study scope is preserved: the main regression runs on the `Année == 2023` cross-section, while the panel fixed-effects robustness check (2022–2024) and the pre/post-COVID descriptive trend (2019–2024, excl. 2020) remain feasible. **No re-scoping required.**
+
+**Status.** All 9 files load cleanly (delimiter and encoding documented per file). 8 pre-Phase-1 flags resolved with evidence (6 confirmed, 1 refuted, 1 OK). Key-integrity verified for every join key. The dataset stack is **viable for the merge pipeline**, subject to the two issues below.
+
+**Two critical findings requiring a design decision (escalated to Lead):**
+1. **IVAL GT/Pro overlap — 983 shared UAI.** The Guide assumed GT and Pro are disjoint institutions (0 overlap). In fact, 983 UAI appear in both files — lycées polyvalents (LPO) offering both tracks. A naive `bind_rows()` would double-count these schools and break the panel key. The GT/Pro combination logic must be revised before assembling the analytical dataframe.
+2. **Annuaire crosswalk — 33 duplicate UAI + `Code_commune` format artifact.** The crosswalk has 33 duplicated UAI (mostly same-commune/different-track, but at least one maps to conflicting communes). Separately, `Code_commune` carries a `.0` suffix (`"15014.0"`) from xlsx numeric storage and will not match Filosofi `CODGEO` (`"15014"`) until cleaned (strip `.0` + `str_pad(5)`).
+
+**Recommendation.** Proceed to Phase 1, Step 2 (key standardization + crosswalk build), incorporating: (a) a decision on LPO handling, (b) Annuaire dedup + `code_commune` reformatting, and (c) 5-digit zero-padding enforced on all commune keys before any join.
+
 ## 1. File Inventory
 
 | File | Rows | Cols | Join key | Delim | Encoding | Notes / flags |
