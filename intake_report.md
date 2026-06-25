@@ -31,7 +31,27 @@
 | #6 | bac_par_departement not one rate per dept | Confirmed | `count()` shows no "ensemble" in Voie or Genre; only disaggregated rows. Weighted aggregation (Σadmis/Σprésents) required for dept totals. |
 | #2 (annuaire) | Annuaire is xlsx (not csv) & name hints REP | Confirmed | Single sheet `Sheet1`, 63 cols. Crosswalk keys present. `Appartenance_Education_Prioritaire` exists but excluded (REP not valid for lycées, per Brief). |
 | #2 (aav) | AAV is xlsx; correct sheet & header position | Confirmed | 4 sheets; data in `Composition_communale`. Header on row 6 (`skip = 5`). Binary urban/rural empirically supported (cats 20+30 = 95%). |
+| #7 | ARCEP join cardinality (fan-out via `type`) | Refuted (no fan-out) | `n_distinct(code_insee)` = `nrow` = 34,937; `count(code_insee) |> filter(n>1)` returns 0 rows; `type` is constant (`"all"`). Safe one-to-one join on commune. |
+| (annuaire dups) | UAI not unique in crosswalk | Confirmed | 33 UAI duplicated. File is 100% `Lycée` (guide's `filter(Type=='lycée')` is redundant). Most dups = same commune, different track (benign). At least one (`0350778F`) maps to **different** communes (35238 vs 35239) → conflicting, needs manual resolution. |
+| (annuaire code fmt) | `Code_commune` has `.0` suffix | Confirmed | Values like `"15014.0"` (xlsx numeric artifact). Will NOT match Filosofi `CODGEO` (`"15014"`). Requires strip `.0` + `str_pad(5)` before join. |
+| (IVAL GT/Pro overlap) | Guide assumes GT & Pro are disjoint (anti_join = 0) | **Refuted** | **983 UAI appear in BOTH files** (lycées polyvalents — one school, both tracks; e.g. "LYCEE PRO POLYVALENT DE CACHAN"). Naïve `bind_rows()` would create 2 rows per polyvalent per year → breaks `UAI+Année` uniqueness → fan-out in regression. **Requires design decision before bind** (dedup / combine / flag). Escalate to Project Lead. |
+| (IPS granularity) | IPS rows/cohort (~3,600) > target lycées (~2,500) | Resolved — not duplication | `rows == distinct_uai` in every cohort (e.g. 3,612 = 3,612). No within-cohort duplicates. Excess = broader establishment coverage (LP, LPO, post-bac beyond GT/Pro). Resolved by **filtering** to target universe at join, not dedup. |
 
 ## 3. Architecture Verdict
 
 **PANEL (multi-year, 2012–2025).** Both IVAL files (GT and Pro) contain 14 years of data, ~one row per school per year, despite the `_2023` filename. This preserves the full study scope: the main regression runs on the `Année == 2023` cross-section, while the panel fixed-effects robustness check (2022–2024) and the pre/post-COVID descriptive trend (2019–2024, excluding 2020) remain feasible. No re-scoping required.
+### Note — Merge pipeline correction required
+The guide's IVAL assembly step (`stopifnot(nrow(semi_join(ival_gt, ival_pro, by='UAI')) == 0)` then `bind_rows`) will **fail/misbehave**: 983 UAI overlap (lycées polyvalents). The GT/Pro combination logic must be revised before building `df`. Flagged for Phase 1 Step 2.
+
+## 4. Key Integrity Checks
+
+| Dataset | Key | Distinct keys | Total rows | Duplicate keys | Verdict |
+|---|---|---|---|---|---|
+| `arcep` | `code_insee` | 34,937 | 34,937 | 0 | Unique — safe join |
+| `filosofi` | `CODGEO` | 34,919 | 34,919 | 0 | Unique — safe join (0 missing) |
+| `aav` | `CODGEO` | 34,875 | 34,875 | 0 | Unique — safe join (0 missing; `skip=5` validated, no footnote rows) |
+| `annuaire` | `Identifiant_de_l_etablissement` (UAI) | 4,873 | 4,907 | 33 UAI (~34 rows) | **Not unique** — needs dedup before crosswalk join |
+| `ival_gt` | `UAI` + `Année` (panel key) | — | 32,485 | 0 within-year | Panel key unique (no same-school-same-year dups) |
+| `ival_pro` | `UAI` + `Année` (panel key) | — | 28,258 | 0 within-year | Panel key unique |
+| `ips_2023` | `UAI` + `Rentrée scolaire` | 3,612/3,631/3,662 per cohort | 10,905 | 0 within-cohort | Unique per cohort ✅ |
+| `ips_2022` | `UAI` + `Rentrée scolaire` | 3,598 | 3,598 | 0 | Unique ✅ |
