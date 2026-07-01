@@ -4,6 +4,43 @@
 **Date:** June 2026
 **Purpose:** Validate that all join inputs are cleaned and uniquely keyed before any merge (Step 3).
 
+## Executive Summary
+
+**Objective.** Phase 1, Step 2 produced and validated six uniquely-keyed input frames and quantified join coverage — with no joins executed. Every input is proven clean and merge-ready ahead of Step 3.
+
+**Status: all six input frames validated, keys proven unique.**
+
+| Input frame | Key | Rows | Unique |
+|---|---|---|---|
+| `crosswalk_final` | UAI | 4,873 | ✅ |
+| `filosofi_input` | CODGEO | 34,919 | ✅ |
+| `arcep_input` | code_insee | 34,937 | ✅ |
+| `aav_input` | CODGEO | 34,875 | ✅ |
+| `ival_anchor` | UAI + annee + track | 60,743 | ✅ |
+| `ips_input` | UAI + annee | 14,503 | ✅ |
+
+**Rulings implemented.**
+- **Ruling 1 (track-stratified IVAL):** `track` column added before binding; the 983 LPO now appear as paired GT/Pro rows; `UAI + annee + track` proven unique.
+- **Ruling 2 (crosswalk dedup):** 19 genuine multi-commune conflicts isolated and resolved via a documented conflict log (8 firm, 11 pending external verification); benign dups collapsed; 1-row-per-UAI proven.
+- **Risks C1–C4 addressed:** GT/Pro column divergence confirmed (only 15 of 88 shared; accent mismatches on near-shared columns) — common core selected by exact name; commune keys cleaned with `str_remove`/`str_pad` (Corsica-safe) and regex-validated (0 malformed).
+
+**Coverage diagnostics (expected NAs quantified before merge).**
+- IVAL → crosswalk: 94.4% (218 UAI missing, concentrated in old years; only 42 missing in session 2023, ~1.2%).
+- IVAL → IPS (2023–2026): 99.5%.
+- Crosswalk → territorial sources: 95–96%. **Root cause of gaps = arrondissement-level codes** in Paris/Marseille/Lyon (45 of 64 missing), not overseas. Confirms the T1 Paris conflict entries are material.
+
+**Two items to carry into Step 3.**
+1. **Arrondissement mapping:** map Paris/Lyon/Marseille arrondissement codes to global commune codes before territorial joins (or use Filosofi's arrondissement granularity).
+2. **Model B temporal bound:** IPS covers sessions 2023–2026 only; Model B cannot use IVAL's long panel. Session 2023 IPS uses the 2022 definition (methodological break at 2023/2024).
+
+**Recommendation.** Inputs are merge-ready. Proceed to Step 3 (execute join sequence + derive `fibre_coverage` + recode urban/rural), incorporating the arrondissement mapping above.
+
+## Mapping Rule — Rentrée → Bac Session (C3)
+
+**Rule:** IPS rentrée `AAAA-BBBB` maps to Bac session `BBBB` (the exit year). Implemented as `str_sub(rentree, 6, 9)`.
+
+**Justification.** IPS measures the social composition of a school's intake during a school year; the Bac is sat at the end of that year. Associating the rentrée with the same school year's Bac session (the second year of the pair) is the standard, defensible alignment. Establishment-level IPS is stable year-to-year, so residual cohort mismatch is negligible. Applied before any IPS↔IVAL join to prevent silent cohort misalignment.
+
 ## T1 — Clean Crosswalk (Annuaire)
 
 **Input:** `rep_annuaire_edu_V2.xlsx` — 4,907 rows (100% Lycée, defensive filter applied).
