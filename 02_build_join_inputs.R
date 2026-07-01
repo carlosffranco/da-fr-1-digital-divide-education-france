@@ -245,3 +245,64 @@ ips_input <- ips_combined |>
   select(UAI, annee, IPS_mean, IPS_std)
 
 names(ips_input)
+
+# ------------------------------------------------------------
+# T5 — COVERAGE DIAGNOSTICS (no joins committed; semi_/anti_join only)
+# ------------------------------------------------------------
+
+# Work at the UAI level (distinct schools in the anchor)
+ival_uai <- ival_anchor |> distinct(UAI)
+n_ival_uai <- nrow(ival_uai)
+n_ival_uai                                    # how many distinct schools in the anchor?
+
+# ── T5a-1: IVAL UAI → crosswalk (do schools find their commune?) ──
+matched_xwalk  <- semi_join(ival_uai, crosswalk_final, by = "UAI") |> nrow()
+missing_xwalk  <- anti_join(ival_uai, crosswalk_final, by = "UAI") |> nrow()
+matched_xwalk                                 # schools that WILL find a commune
+missing_xwalk                                 # schools that will get NA commune
+round(matched_xwalk / n_ival_uai * 100, 1)    # match rate %
+
+# ── T5a-2: IVAL UAI → IPS (do schools find an IPS?) ──
+# IPS only exists for sessions 2023–2026, so compare on UAI presence
+ival_uai_ips <- ival_anchor |> filter(annee %in% 2023:2026) |> distinct(UAI)
+matched_ips <- semi_join(ival_uai_ips, ips_input, by = "UAI") |> nrow()
+missing_ips <- anti_join(ival_uai_ips, ips_input, by = "UAI") |> nrow()
+matched_ips
+missing_ips
+round(matched_ips / nrow(ival_uai_ips) * 100, 1)   # IPS match rate % (2023–2026 UAIs)
+
+# Diagnose the 218 missing-from-crosswalk UAIs: which YEARS are they in?
+missing_uais <- anti_join(ival_uai, crosswalk_final, by = "UAI") |> pull(UAI)
+
+# Are they mostly old years, or active in 2023?
+ival_anchor |>
+  filter(UAI %in% missing_uais) |>
+  count(annee) |>
+  arrange(desc(annee))     # see the year distribution of the missing schools
+
+# ── T5b: crosswalk communes → territorial sources ──────────
+# Distinct communes actually used by matched schools
+xwalk_communes <- crosswalk_final |>
+  semi_join(ival_uai, by = "UAI") |>       # only communes of schools that are in IVAL
+  distinct(code_commune)
+n_xwalk_comm <- nrow(xwalk_communes)
+n_xwalk_comm                                # distinct communes to cover
+
+# Coverage against each territorial source (by = commune key)
+fil_missing  <- anti_join(xwalk_communes, filosofi_input, by = c("code_commune" = "CODGEO"))   |> nrow()
+arcep_missing<- anti_join(xwalk_communes, arcep_input,    by = c("code_commune" = "code_insee"))|> nrow()
+aav_missing  <- anti_join(xwalk_communes, aav_input,      by = c("code_commune" = "CODGEO"))   |> nrow()
+
+fil_missing                                 # communes missing from Filosofi
+arcep_missing                               # communes missing from ARCEP
+aav_missing                                 # communes missing from AAV
+
+# Match rates
+round((n_xwalk_comm - fil_missing)  / n_xwalk_comm * 100, 1)
+round((n_xwalk_comm - arcep_missing)/ n_xwalk_comm * 100, 1)
+round((n_xwalk_comm - aav_missing)  / n_xwalk_comm * 100, 1)
+
+# Confirm the missing communes are overseas (98.../97...)
+anti_join(xwalk_communes, arcep_input, by = c("code_commune" = "code_insee")) |>
+  mutate(prefix = str_sub(code_commune, 1, 2)) |>
+  count(prefix, sort = TRUE)

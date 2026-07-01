@@ -59,6 +59,25 @@ Both files have 88 columns but share only 15 (`intersect`); 73 differ per side (
 **Output:** `ips_input` — 14,503 rows. Columns: `UAI, annee, IPS_mean, IPS_std`.
 **Uniqueness proof:** `count(UAI, annee) |> filter(n>1)` = 0 rows. ✅
 
+### T5a — School-level coverage (IVAL anchor → crosswalk & IPS)
+
+Distinct UAI in anchor: 3,867.
+- **IVAL → crosswalk:** 3,649 matched (94.4%); 218 missing commune. Year distribution of the 218 shows heavy concentration in old years (2012: 170 → 2025: 61), confirming most are historical/closed schools absent from the current annuaire. **In session 2023 (main regression year), only 42 UAI lack a commune (~1.2%)** — documented as minor coverage loss.
+- **IVAL → IPS (sessions 2023–2026):** 3,522 matched of 3,538 (99.5%); only 16 missing. Excellent coverage within IPS's valid range.
+
+### T5b — Territorial coverage (crosswalk communes → sources)
+
+Distinct communes used by IVAL schools: 1,393.
+| Source | Missing communes | Match rate |
+|---|---|---|
+| Filosofi | 51 | 96.3% |
+| ARCEP | 64 | 95.4% |
+| AAV | 64 | 95.4% |
+
+**Root cause identified (not overseas as first assumed):** missing communes cluster in Paris (75: 19), Marseille (13: 17), and Lyon (69: 9) — 45 of 64. These cities use **arrondissement-level INSEE codes** (75101–75120, etc.) in the crosswalk, but ARCEP/AAV likely register them under a single global commune code. Filosofi misses fewer (51) because it publishes arrondissement-level data. **This confirms the T1 Paris conflict-log entries matter.** Only 3 of 64 are overseas (97…).
+
+**Action for Step 3:** map arrondissement codes to global commune codes before territorial joins (or leverage Filosofi's arrondissement granularity). Flagged, not resolved (Step 2 = diagnosis only).
+
 ### Conflict Resolution Log (19 UAI)
 
 | UAI | Chosen commune | Status | Rationale |
