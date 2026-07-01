@@ -101,3 +101,100 @@ crosswalk_final <- bind_rows(crosswalk_clean_part, crosswalk_conflict_part) |>
 nrow(crosswalk_final)
 n_distinct(crosswalk_final$UAI)
 crosswalk_final |> count(UAI) |> filter(n > 1)    # MUST return 0 rows
+
+# ------------------------------------------------------------
+# T2 — STANDARDIZE COMMUNE-LEVEL KEYS (Filosofi, ARCEP, AAV)
+# No derivations here — keys + column selection only. Transforms are Step 3.
+# ------------------------------------------------------------
+
+# ── T2a — Filosofi ─────────────────────────────────────────
+filosofi_input <- filosofi |>
+  mutate(CODGEO = str_pad(str_remove(CODGEO, "\\.0$"), 5, pad = "0")) |>  # standardize key
+  select(CODGEO, MED21, TP6021, D121, RD21)          # needed cols + robustness (D121, RD21)
+
+# Validate key format + uniqueness
+filosofi_input |>
+  filter(!str_detect(CODGEO, "^(\\d{5}|2[AB]\\d{3})$"))    # malformed? expect 0 rows
+n_distinct(filosofi_input$CODGEO)                          # distinct keys
+nrow(filosofi_input)                                       # total rows (should match)
+
+# ── T2b — ARCEP ─────────────────────────────────────────────
+arcep_input <- arcep |>
+  mutate(code_insee = str_pad(str_remove(code_insee, "\\.0$"), 5, pad = "0")) |>
+  select(code_insee, elig_ftth, nbr)                 # raw — derive fibre_coverage in Step 3
+
+arcep_input |>
+  filter(!str_detect(code_insee, "^(\\d{5}|2[AB]\\d{3})$"))   # malformed? expect 0 rows
+n_distinct(arcep_input$code_insee)
+nrow(arcep_input)
+
+# ── T2c — AAV ───────────────────────────────────────────────
+aav_input <- aav |>
+  mutate(CODGEO = str_pad(str_remove(CODGEO, "\\.0$"), 5, pad = "0")) |>
+  select(CODGEO, CATEAAV2020)                        # raw — recode urban/rural in Step 3
+
+aav_input |>
+  filter(!str_detect(CODGEO, "^(\\d{5}|2[AB]\\d{3})$"))       # malformed? expect 0 rows
+n_distinct(aav_input$CODGEO)
+nrow(aav_input)
+
+# ------------------------------------------------------------
+# T3 — ASSEMBLE IVAL ANCHOR (track-stratified, Ruling 1)
+# ------------------------------------------------------------
+
+# T3.1 — confirm C1: do GT and Pro share the same 88 column names?
+length(names(ival_gt))                          # how many cols in GT
+length(names(ival_pro))                         # how many cols in Pro
+
+setdiff(names(ival_gt), names(ival_pro))        # columns ONLY in GT
+setdiff(names(ival_pro), names(ival_gt))        # columns ONLY in Pro
+
+intersect(names(ival_gt), names(ival_pro))      # columns in BOTH (common core candidates)
+
+# T3.2 — select common core BY EXACT NAME, rename to clean names, add track
+
+# ── GT track ────────────────────────────────────────────────
+ival_gt_core <- ival_gt |>
+  select(
+    UAI,
+    annee            = `Année`,
+    etablissement    = Etablissement,
+    code_commune     = `Code commune`,
+    secteur          = Secteur,
+    presents         = `Présents - Toutes séries`,                          # GT: with accent
+    DV2_taux         = `Taux de réussite - Toutes séries`,                  # raw Bac rate
+    DV1_va           = `Valeur ajoutée du taux de réussite - Toutes séries` # value-added
+  ) |>
+  mutate(track = "GT")
+
+# ── Pro track ───────────────────────────────────────────────
+ival_pro_core <- ival_pro |>
+  select(
+    UAI,
+    annee            = `Année`,
+    etablissement    = Etablissement,
+    code_commune     = `Code commune`,
+    secteur          = Secteur,
+    presents         = `Présents - Toutes series`,                          # Pro: NO accent (!)
+    DV2_taux         = `Taux de réussite - Toutes séries`,
+    DV1_va           = `Valeur ajoutée du taux de réussite - Toutes séries`
+  ) |>
+  mutate(track = "Pro")
+
+# Verify both now have identical names
+names(ival_gt_core)
+names(ival_pro_core)
+identical(names(ival_gt_core), names(ival_pro_core))    # MUST be TRUE
+
+# T3.3 — bind the two tracks into the IVAL anchor
+ival_anchor <- bind_rows(ival_gt_core, ival_pro_core)
+
+nrow(ival_anchor)                                    # should be 32,485 + 28,258 = 60,743
+
+# ── Prove the panel key UAI + annee + track is unique ──────
+ival_anchor |> count(UAI, annee, track) |> filter(n > 1)    # MUST return 0 rows
+
+# ── Confirm the 983 LPO now appear as paired GT+Pro rows ───
+ival_anchor |>
+  filter(UAI %in% shared_uai) |>                     # the 983 shared UAIs from Obj. 3
+  count(track)                                        # should show both GT and Pro rows

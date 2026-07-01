@@ -13,6 +13,34 @@
 **Output:** `crosswalk_final` — 4,873 rows, 1 per UAI. Columns: `UAI, code_commune, sector`.
 **Uniqueness proof:** `nrow == n_distinct(UAI) == 4,873`; `count(UAI) |> filter(n>1)` = 0 rows. ✅
 
+## T2 — Standardized Commune-Level Keys
+
+All commune keys standardized via `str_pad(str_remove(key, "\\.0$"), 5, pad="0")` and validated against `^(\d{5}|2[AB]\d{3})$`. No derivations performed (raw columns kept — transforms deferred to Step 3).
+
+| Input frame | Source | Key | Cols kept | Distinct = Rows | Malformed keys |
+|---|---|---|---|---|---|
+| `filosofi_input` | `cc_filosofi_2021_COM.csv` | `CODGEO` | CODGEO, MED21, TP6021, D121, RD21 | 34,919 | 0 |
+| `arcep_input` | `arcep_mci_commune_2024T4.csv` | `code_insee` | code_insee, elig_ftth, nbr | 34,937 | 0 |
+| `aav_input` | `aav2020_urban_rural.xlsx` | `CODGEO` | CODGEO, CATEAAV2020 | 34,875 | 0 |
+
+**Note:** `fibre_coverage` (`elig_ftth`/`nbr`) and urban/rural recoding (`CATEAAV2020`) intentionally deferred to Step 3 per Lead ruling.
+
+## T3 — IVAL Anchor (track-stratified, Ruling 1)
+
+**C1 confirmed:** GT and Pro share only 15 of 88 column names; 73 diverge per side (track-specific series). Some near-shared columns differ by accent (`Présents - Toutes séries` GT vs `series` Pro) — handled by selecting per-file exact names and renaming to a common schema.
+
+**Assembly:** selected common core by exact name (C4-compliant): `UAI, annee, etablissement, code_commune, secteur, presents, DV2_taux (Taux de réussite - Toutes séries), DV1_va (Valeur ajoutée … Toutes séries)`. Added `track` ("GT"/"Pro") before binding.
+
+**Output:** `ival_anchor` — 60,743 rows (32,485 GT + 28,258 Pro).
+
+**Uniqueness proof:** `count(UAI, annee, track) |> filter(n>1)` = 0 rows. Panel key `UAI + annee + track` is unique. ✅
+
+**LPO verification:** the 983 shared UAI appear as paired rows across both tracks (GT: 12,176; Pro: 12,111), confirming polyvalents are now legitimate separate observations, not duplicates. Guide's `anti_join == 0` assumption formally superseded.
+
+### T3.1 — C1 confirmed (GT/Pro column divergence)
+
+Both files have 88 columns but share only 15 (`intersect`); 73 differ per side (track-specific series: GT has L/ES/S/STMG…, Pro has Transformations/Services/Production…). **Additional catch:** some seemingly-shared columns differ by accents across files — `Présents - Toutes séries` (GT) vs `Présents - Toutes series` (Pro), `Taux d'accès 1ere-bac` (GT) vs `Taux d'acces 1ere-bac` (Pro). Both DVs (`Taux de réussite - Toutes séries`, `Valeur ajoutée du taux de réussite - Toutes séries`) ARE identical across files. Common core selected by exact per-file name.
+
 ### Conflict Resolution Log (19 UAI)
 
 | UAI | Chosen commune | Status | Rationale |
