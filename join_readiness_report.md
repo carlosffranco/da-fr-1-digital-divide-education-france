@@ -41,6 +41,24 @@ All commune keys standardized via `str_pad(str_remove(key, "\\.0$"), 5, pad="0")
 
 Both files have 88 columns but share only 15 (`intersect`); 73 differ per side (track-specific series: GT has L/ES/S/STMG…, Pro has Transformations/Services/Production…). **Additional catch:** some seemingly-shared columns differ by accents across files — `Présents - Toutes séries` (GT) vs `Présents - Toutes series` (Pro), `Taux d'accès 1ere-bac` (GT) vs `Taux d'acces 1ere-bac` (Pro). Both DVs (`Taux de réussite - Toutes séries`, `Valeur ajoutée du taux de réussite - Toutes séries`) ARE identical across files. Common core selected by exact per-file name.
 
+## T4 — Harmonized IPS (rename + rentrée→session mapping, C3)
+
+**Schema harmonization:** IPS 2022 and 2023 use different column names for the same concepts. Renamed both to common schema `UAI, rentree, IPS_mean, IPS_std`. (IPS_mean: `IPS Ensemble GT-PRO` in 2022 vs `IPS de l'établissement` in 2023 — definition break documented; IPS_std is descriptive-only per Brief.)
+
+**Mapping rule (C3):** rentrée `AAAA-BBBB` → Bac session `BBBB` (exit year). Applied via `str_sub(rentree, 6, 9)`.
+
+| rentree | → session (annee) | source | rows |
+|---|---|---|---|
+| 2022-2023 | 2023 | IPS 2022 | 3,598 |
+| 2023-2024 | 2024 | IPS 2023 | 3,612 |
+| 2024-2025 | 2025 | IPS 2023 | 3,631 |
+| 2025-2026 | 2026 | IPS 2023 | 3,662 |
+
+**Consequence for Model B:** IPS covers sessions 2023–2026 only. Model B (uses IPS) is bounded to these years — cannot use IVAL's long panel. Session 2023 IPS_mean uses the 2022 definition; 2024+ use the 2023 definition (methodological break at 2023/2024 boundary).
+
+**Output:** `ips_input` — 14,503 rows. Columns: `UAI, annee, IPS_mean, IPS_std`.
+**Uniqueness proof:** `count(UAI, annee) |> filter(n>1)` = 0 rows. ✅
+
 ### Conflict Resolution Log (19 UAI)
 
 | UAI | Chosen commune | Status | Rationale |

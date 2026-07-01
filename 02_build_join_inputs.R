@@ -198,3 +198,50 @@ ival_anchor |> count(UAI, annee, track) |> filter(n > 1)    # MUST return 0 rows
 ival_anchor |>
   filter(UAI %in% shared_uai) |>                     # the 983 shared UAIs from Obj. 3
   count(track)                                        # should show both GT and Pro rows
+
+# ------------------------------------------------------------
+# T4 — HARMONIZE IPS (rename + rentrée→session mapping, C3)
+# ------------------------------------------------------------
+
+# Mapping rule (C3): rentrée "AAAA-BBBB" → Bac session "BBBB" (the exit year)
+
+# ── T4.1 — rename each year to a common schema ─────────────
+# IPS 2022 columns: IPS Ensemble GT-PRO / Ecart-type de l'IPS voie GT
+ips_2022_core <- ips_2022 |>
+  select(
+    UAI,
+    rentree  = `Rentrée scolaire`,
+    IPS_mean = `IPS Ensemble GT-PRO`,
+    IPS_std  = `Ecart-type de l'IPS voie GT`
+  )
+
+# IPS 2023 columns: IPS de l'établissement / Ecart-type établissement
+ips_2023_core <- ips_2023 |>
+  select(
+    UAI,
+    rentree  = `Rentrée scolaire`,
+    IPS_mean = `IPS de l'établissement`,
+    IPS_std  = `Ecart-type établissement`
+  )
+
+# Verify identical schemas
+identical(names(ips_2022_core), names(ips_2023_core))   # MUST be TRUE
+names(ips_2022_core)
+
+# ── T4.2 — apply mapping rule: rentrée "AAAA-BBBB" → session "BBBB" ──
+# Bind first (same schema), then derive the session year once.
+ips_combined <- bind_rows(ips_2022_core, ips_2023_core) |>
+  mutate(annee = str_sub(rentree, 6, 9))    # take chars 6–9 = the BBBB exit year
+
+# Check the mapping worked: each rentrée → its session year
+ips_combined |> count(rentree, annee)
+
+# ── T4.3 — prove uniqueness on UAI + annee (mapped session year) ──
+nrow(ips_combined)                                    # total rows (expect 14,503)
+ips_combined |> count(UAI, annee) |> filter(n > 1)    # MUST return 0 rows
+
+# Final IPS input frame: keep the analytical columns
+ips_input <- ips_combined |>
+  select(UAI, annee, IPS_mean, IPS_std)
+
+names(ips_input)
