@@ -118,3 +118,48 @@ ival_anchor |>
   filter(commune_final != commune_terr) |>
   count(commune_final, commune_terr) |>
   arrange(desc(n)) |> head(10)
+
+# ------------------------------------------------------------
+# T2 — EXECUTE JOIN SEQUENCE (with row-count assertions)
+# ------------------------------------------------------------
+
+# Baseline row count — every join must preserve this
+n_base <- nrow(ival_anchor)
+n_base                                            # 60,743
+
+# ── Join 1: anchor → IPS (by UAI + annee) ──────────────────
+# Note: IPS replicates across GT/Pro rows of an LPO — expected, NOT fan-out (row count preserved)
+df <- ival_anchor |>
+  left_join(ips_input, by = c("UAI", "annee"))
+
+stopifnot(nrow(df) == n_base)                     # assert: no fan-out
+nrow(df)                                          # confirm still 60,743
+
+# ── Join 2: df → Filosofi (income) BY commune_final (arrondissements kept) ──
+df <- df |>
+  left_join(filosofi_input, by = c("commune_final" = "CODGEO"))
+
+stopifnot(nrow(df) == n_base)                     # assert: no fan-out
+nrow(df)                                          # confirm still 60,743
+
+# ── Join 3: df → ARCEP (fibre) BY commune_terr (arrondissements collapsed) ──
+df <- df |>
+  left_join(arcep_input, by = c("commune_terr" = "code_insee"))
+
+stopifnot(nrow(df) == n_base)                     # assert: no fan-out
+nrow(df)                                          # confirm still 60,743
+
+# ── Join 4: df → AAV (urban/rural) BY commune_terr (arrondissements collapsed) ──
+df <- df |>
+  left_join(aav_input, by = c("commune_terr" = "CODGEO"))
+
+stopifnot(nrow(df) == n_base)                     # assert: no fan-out
+nrow(df)                                          # confirm still 60,743
+
+# ── Assertion summary table (all 4 joins) ──────────────────
+tibble(
+  step       = c("baseline (anchor)", "1: + IPS", "2: + Filosofi", "3: + ARCEP", "4: + AAV"),
+  join_key   = c("—", "UAI + annee", "commune_final", "commune_terr", "commune_terr"),
+  nrow_after = c(n_base, n_base, n_base, n_base, nrow(df)),
+  preserved  = nrow(df) == n_base
+)

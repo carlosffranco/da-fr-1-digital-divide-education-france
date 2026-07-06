@@ -31,3 +31,17 @@ Confirms Step 2 hypothesis (and explains the 64 vs 51 missing-commune gap: the ~
 - Validation: `commune_terr` 0 NAs, 0 malformed.
 
 **Methodological justification:** the asymmetry is deliberate — income varies sharply across arrondissements (must preserve), whereas FTTH availability and urban/rural class are saturated/constant within a city core (safe to collapse).
+
+## T2 — Join Execution (with row-count assertions)
+
+Master dataframe `df` built by joining in order, each with a `stopifnot(nrow == 60743)` assertion.
+
+| Step | Join key | nrow after | Preserved |
+|---|---|---|---|
+| baseline (anchor) | — | 60,743 | ✅ |
+| 1: + IPS | UAI + annee | 60,743 | ✅ |
+| 2: + Filosofi | commune_final | 60,743 | ✅ |
+| 3: + ARCEP | commune_terr | 60,743 | ✅ |
+| 4: + AAV | commune_terr | 60,743 | ✅ |
+
+No fan-out at any step. IPS replicates across GT/Pro rows of LPOs (expected — row count preserved, not fan-out). Ruling 1 applied: Filosofi on `commune_final` (arrondissement-granular), ARCEP/AAV on `commune_terr` (arrondissement-collapsed).
