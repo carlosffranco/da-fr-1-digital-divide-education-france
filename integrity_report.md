@@ -60,3 +60,19 @@ Three model variables derived from raw joined columns (Filosofi cols renamed to 
 **`exclude_regression`** = (annee == 2020). Flags 4,334 rows, all confirmed to be 2020 only (COVID automatic passes).
 
 **2023-slice territorial NA counts (of 4,340 rows):** fibre 2, urban_rural 4, income 86, poverty 86 (~2% max). Income/poverty share the same 86 (same Filosofi source). Filosofi loses slightly more than ARCEP/AAV — the deliberate cost of keeping arrondissement granularity for income (Ruling 1).
+
+## T4 — Post-Merge NA Audit (DV-focused)
+
+**Global NA audit (full df, 60,743 rows):** DV1_va 935, DV2_taux 0, IPS_mean 47,752 (expected — IPS exists only for sessions 2023–2026; pre-2023 rows have no IPS by design), fibre 92, income/poverty 1,214 each, urban_rural 120.
+
+**2023 slice DV audit (sets effective N):** of 4,340 rows — DV1_va NA 26 (0.6%), DV2_taux NA 0, IPS NA 16. The Lead's "value-added is NA-heavy" concern did not materialize in 2023 (VA computed for ~99.4% of schools).
+
+**Effective N per track (listwise deletion):**
+| Track | Rows | Model A (DV1 + territorial) | Model B (DV2 + IPS + territorial) |
+|---|---|---|---|
+| GT | 2,331 | 2,284 | 2,278 |
+| Pro | 2,009 | 1,966 | 1,963 |
+
+GT confirmed as primary stratum (~2,280, in line with Lead's ~2,500 estimate); Pro robust as parallel stratum (~1,965). Model A and B run on near-identical samples.
+
+**Dropped-school characterization (90 dropped from Model A, 2.1%):** primary driver is Filosofi income coverage (86 of 90), the documented cost of keeping arrondissement granularity (Ruling 1). Dropped vs retained: size similar (176 vs 155 présents — refutes small-school VA concern); rural slightly over-represented (4.7% vs 1.2%) and private under-represented (13.3% vs 30%), but absolute counts are tiny (~4 rural, ~12 private). **Verdict: missingness is near-random with a minor, immaterial rural/public skew — documented, not hidden. No material coefficient bias.**

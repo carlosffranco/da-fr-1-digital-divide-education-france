@@ -217,3 +217,82 @@ df |>
     na_income      = sum(is.na(median_income)),
     na_poverty     = sum(is.na(poverty_rate))
   )
+
+# ------------------------------------------------------------
+# T4 — POST-MERGE INTEGRITY AUDIT (NA audit, DV-focused)
+# ------------------------------------------------------------
+
+# Convert model variables to numeric (were character from intake)
+df <- df |>
+  mutate(
+    DV1_va   = as.numeric(DV1_va),
+    DV2_taux = as.numeric(DV2_taux),
+    IPS_mean = as.numeric(IPS_mean),
+    IPS_std  = as.numeric(IPS_std),
+    presents = as.numeric(presents)
+  )
+
+# ── T4.1 — global NA audit on all model variables (full df) ──
+df |>
+  summarise(across(
+    c(DV1_va, DV2_taux, IPS_mean, fibre_coverage,
+      median_income, poverty_rate, urban_rural),
+    ~ sum(is.na(.))
+  ))
+
+# ── T4.2 — DV-specific NA audit in the 2023 slice (sets effective N) ──
+df_2023 <- df |> filter(annee == "2023", !exclude_regression)
+nrow(df_2023)                                    # total 2023 rows (pre-deletion)
+
+df_2023 |>
+  summarise(
+    n_total      = n(),
+    na_DV1       = sum(is.na(DV1_va)),           # value-added missing (Model A)
+    na_DV2       = sum(is.na(DV2_taux)),         # raw rate missing (Model B)
+    na_IPS       = sum(is.na(IPS_mean)),         # IPS missing (Model B)
+    pct_DV1_na   = round(mean(is.na(DV1_va)) * 100, 1),
+    pct_DV2_na   = round(mean(is.na(DV2_taux)) * 100, 1)
+  )
+
+# Effective N per model, per track (listwise deletion on each model's variables)
+
+# Model A vars: DV1_va + territorial (fibre, income, poverty, urban_rural)
+# Model B vars: DV2_taux + IPS_mean + territorial
+df_2023 |>
+  group_by(track) |>
+  summarise(
+    n_rows = n(),
+    # Model A effective N: complete cases on DV1 + territorial predictors
+    n_modelA = sum(complete.cases(DV1_va, fibre_coverage, median_income, poverty_rate, urban_rural)),
+    # Model B effective N: complete cases on DV2 + IPS + territorial predictors
+    n_modelB = sum(complete.cases(DV2_taux, IPS_mean, fibre_coverage, median_income, poverty_rate, urban_rural))
+  )
+
+# T4.3 — characterize schools dropped by listwise deletion (Model A)
+# Flag complete vs dropped for Model A
+df_2023 <- df_2023 |>
+  mutate(dropped_A = !complete.cases(
+    DV1_va, fibre_coverage, median_income, poverty_rate, urban_rural
+  ))
+
+# Which variable causes each drop? (diagnose the source of missingness)
+df_2023 |>
+  filter(dropped_A) |>
+  summarise(
+    n_dropped     = n(),
+    miss_DV1      = sum(is.na(DV1_va)),
+    miss_fibre    = sum(is.na(fibre_coverage)),
+    miss_income   = sum(is.na(median_income)),
+    miss_urban    = sum(is.na(urban_rural))
+  )
+
+# Are dropped schools systematically different? Compare by sector and track
+df_2023 |>
+  group_by(dropped_A) |>
+  summarise(
+    n           = n(),
+    pct_private = round(mean(str_detect(secteur, regex("privé", ignore_case = TRUE))) * 100, 1),
+    pct_rural   = round(mean(urban_rural == "Rural", na.rm = TRUE) * 100, 1),
+    mean_presents = round(mean(presents, na.rm = TRUE), 0)
+  )
+
