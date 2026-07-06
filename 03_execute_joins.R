@@ -163,3 +163,57 @@ tibble(
   nrow_after = c(n_base, n_base, n_base, n_base, nrow(df)),
   preserved  = nrow(df) == n_base
 )
+# ------------------------------------------------------------
+# T3 — DERIVE ANALYTICAL VARIABLES
+# ------------------------------------------------------------
+
+df <- df |>
+  mutate(
+    # Convert raw territorial cols to numeric (were character from intake)
+    elig_ftth = as.numeric(elig_ftth),
+    nbr       = as.numeric(nbr),
+    
+    # fibre_coverage with divide-by-zero guard
+    fibre_coverage = if_else(nbr == 0, NA_real_, elig_ftth / nbr * 100),
+    
+    # urban_rural: binary factor (30 = Rural, else Urban)
+    urban_rural = factor(if_else(CATEAAV2020 == "30", "Rural", "Urban"),
+                         levels = c("Urban", "Rural")),
+    
+    # exclude_regression flag: 2020 = COVID automatic passes
+    exclude_regression = (annee == "2020")
+  )
+
+# ── Guard checks the Lead required ─────────────────────────
+sum(df$nbr == 0, na.rm = TRUE)                          # how many divide-by-zero (now NA)?
+sum(is.na(df$fibre_coverage))                           # total NA in fibre_coverage
+df |> filter(fibre_coverage > 100) |> nrow()           # values >100 (data errors)? inspect
+summary(df$fibre_coverage)                              # distribution sanity check
+
+# Quick check on the other two derived variables
+df |> count(urban_rural)                         # Urban/Rural distribution + any NA
+df |> count(exclude_regression)                  # TRUE only for 2020?
+df |> filter(exclude_regression) |> count(annee) # confirm exclude flag = 2020 only
+
+# Rename Filosofi columns to analytical names (match model & formulas)
+df <- df |>
+  rename(
+    median_income = MED21,
+    poverty_rate  = TP6021,
+    income_d1     = D121,
+    income_ratio  = RD21
+  )
+
+# Confirm the rename worked
+df |> select(median_income, poverty_rate, income_d1, income_ratio) |> names()
+
+# Preview: NA counts in the 2023 slice for the derived/territorial vars
+df |>
+  filter(annee == "2023") |>
+  summarise(
+    n_2023         = n(),
+    na_fibre       = sum(is.na(fibre_coverage)),
+    na_urban_rural = sum(is.na(urban_rural)),
+    na_income      = sum(is.na(median_income)),
+    na_poverty     = sum(is.na(poverty_rate))
+  )

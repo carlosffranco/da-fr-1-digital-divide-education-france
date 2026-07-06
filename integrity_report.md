@@ -45,3 +45,18 @@ Master dataframe `df` built by joining in order, each with a `stopifnot(nrow == 
 | 4: + AAV | commune_terr | 60,743 | ✅ |
 
 No fan-out at any step. IPS replicates across GT/Pro rows of LPOs (expected — row count preserved, not fan-out). Ruling 1 applied: Filosofi on `commune_final` (arrondissement-granular), ARCEP/AAV on `commune_terr` (arrondissement-collapsed).
+
+## T3 — Derived Analytical Variables
+
+Three model variables derived from raw joined columns (Filosofi cols renamed to analytical names: `median_income`, `poverty_rate`, `income_d1`, `income_ratio`).
+
+**`fibre_coverage` = elig_ftth / nbr × 100** (with guards):
+- Divide-by-zero (`nbr == 0`): 0 cases.
+- Values >100 (data error): 0 cases.
+- Distribution (all years): min 0, median 93.82, mean 91.21, max 99.96 — plausible, left-skewed (rural communes at low end). 92 NA total (unmatched communes).
+
+**`urban_rural`** = factor(Rural if CATEAAV2020=="30" else Urban). Distribution: Urban 59,837 / Rural 786 / NA 120. **Note:** heavily Urban-skewed at lycée level (rural communes rarely host a lycée) — low statistical power for the rural coefficient; interpret with caution in Phase 3.
+
+**`exclude_regression`** = (annee == 2020). Flags 4,334 rows, all confirmed to be 2020 only (COVID automatic passes).
+
+**2023-slice territorial NA counts (of 4,340 rows):** fibre 2, urban_rural 4, income 86, poverty 86 (~2% max). Income/poverty share the same 86 (same Filosofi source). Filosofi loses slightly more than ARCEP/AAV — the deliberate cost of keeping arrondissement granularity for income (Ruling 1).
