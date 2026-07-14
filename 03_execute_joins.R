@@ -295,4 +295,34 @@ df_2023 |>
     pct_rural   = round(mean(urban_rural == "Rural", na.rm = TRUE) * 100, 1),
     mean_presents = round(mean(presents, na.rm = TRUE), 0)
   )
+# ------------------------------------------------------------
+# T5 — BUILD & CERTIFY df_reg (regression-ready 2023 cross-section)
+# ------------------------------------------------------------
 
+# Filter to the analysis universe: 2023 session, non-excluded
+df_reg <- df |>
+  filter(annee == "2023", !exclude_regression)
+
+# ── Certify: dimensions and per-track effective N ──────────
+nrow(df_reg)                                     # total rows (should be 4,340)
+df_reg |> count(track)                            # rows per track
+
+# Formal effective-N certification per model, per track
+df_reg |>
+  group_by(track) |>
+  summarise(
+    rows      = n(),
+    modelA_N  = sum(complete.cases(DV1_va, fibre_coverage, median_income, poverty_rate, urban_rural)),
+    modelB_N  = sum(complete.cases(DV2_taux, IPS_mean, fibre_coverage, median_income, poverty_rate, urban_rural)),
+    .groups = "drop"
+  )
+
+# ── Final structural check: confirm regression-ready ───────
+df_reg |>
+  summarise(
+    distinct_uai_track = n_distinct(paste(UAI, track)),   # unique school-track units
+    all_2023           = all(annee == "2023"),            # only 2023?
+    no_excluded        = all(!exclude_regression),        # no COVID year?
+    dv1_class          = class(DV1_va),                   # numeric?
+    ips_class          = class(IPS_mean)
+  )
