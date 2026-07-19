@@ -222,14 +222,19 @@ df |>
 # T4 — POST-MERGE INTEGRITY AUDIT (NA audit, DV-focused)
 # ------------------------------------------------------------
 
-# Convert model variables to numeric (were character from intake)
+# Convert model variables to numeric (were character from intake).
+# Handle: French decimal comma (","→".") and INSEE suppression codes ("s"/"nd" → NA).
 df <- df |>
   mutate(
-    DV1_va   = as.numeric(DV1_va),
-    DV2_taux = as.numeric(DV2_taux),
-    IPS_mean = as.numeric(IPS_mean),
-    IPS_std  = as.numeric(IPS_std),
-    presents = as.numeric(presents)
+    DV1_va        = as.numeric(str_replace(DV1_va,        ",", ".")),
+    DV2_taux      = as.numeric(str_replace(DV2_taux,      ",", ".")),
+    IPS_mean      = as.numeric(str_replace(IPS_mean,      ",", ".")),
+    IPS_std       = as.numeric(str_replace(IPS_std,       ",", ".")),
+    presents      = as.numeric(presents),
+    median_income = as.numeric(str_replace(na_if(na_if(median_income, "s"), "nd"), ",", ".")),
+    poverty_rate  = as.numeric(str_replace(na_if(na_if(poverty_rate,  "s"), "nd"), ",", ".")),
+    income_ratio  = as.numeric(str_replace(na_if(na_if(income_ratio,  "s"), "nd"), ",", ".")),
+    income_d1     = as.numeric(str_replace(na_if(na_if(income_d1,     "s"), "nd"), ",", "."))
   )
 
 # ── T4.1 — global NA audit on all model variables (full df) ──
@@ -326,3 +331,15 @@ df_reg |>
     dv1_class          = class(DV1_va),                   # numeric?
     ips_class          = class(IPS_mean)
   )
+
+# Re-save artifacts with corrected numeric types
+write_rds(df,     "data/processed/df_full.rds")
+write_rds(df_reg, "data/processed/df_reg.rds")
+
+# Confirm
+list.files("data/processed")
+
+# Save processed artifacts for downstream phases (EDA loads these directly)
+write_rds(df,     "data/processed/df_full.rds")
+write_rds(df_reg, "data/processed/df_reg.rds")
+list.files("data/processed")
