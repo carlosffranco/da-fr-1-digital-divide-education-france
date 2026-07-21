@@ -46,3 +46,57 @@ summary_long <- summary_continuous |>
   arrange(track, variable)
 
 print(summary_long, n = 40)
+
+# ------------------------------------------------------------
+# P2-T2 — DISTRIBUTION DIAGNOSTICS (histograms, per track)
+# ------------------------------------------------------------
+
+# Histogram 1: DV2_taux (raw Bac rate) — ceiling effect (NA filtered)
+df_reg |>
+  filter(!is.na(DV2_taux)) |>
+  ggplot(aes(x = DV2_taux)) +
+  geom_histogram(binwidth = 2, fill = "steelblue", color = "white") +
+  facet_wrap(~ track, scales = "free_y") +
+  labs(
+    title = "Distribution of Raw Bac Pass Rate (DV2) by Track",
+    subtitle = "GT compressed against the 100% ceiling; Pro more dispersed",
+    x = "Raw Bac pass rate (%)",
+    y = "Number of lycées"
+  ) +
+  theme_minimal()
+
+ggsave("output/figures/p2t2_dv2_hist.png", width = 9, height = 5, dpi = 300)
+
+# Histogram 2: DV1_va (value-added) — symmetric, centered on 0 (NA filtered)
+df_reg |>
+  filter(!is.na(DV1_va)) |>
+  ggplot(aes(x = DV1_va)) +
+  geom_histogram(binwidth = 1, fill = "darkorange", color = "white") +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+  facet_wrap(~ track, scales = "free_y") +
+  labs(
+    title = "Distribution of Value-Added Score (DV1) by Track",
+    subtitle = "Centered on 0 (a residual by construction); Pro has fatter tails",
+    x = "Value-added score (points above/below expected)",
+    y = "Number of lycées"
+  ) +
+  theme_minimal()
+
+ggsave("output/figures/p2t2_dv1_hist.png", width = 9, height = 5, dpi = 300)
+
+# Histogram 3: fibre_coverage — Catch 1 (NA filtered before plotting for clean output)
+df_reg |>
+  filter(!is.na(fibre_coverage)) |>
+  ggplot(aes(x = fibre_coverage)) +
+  geom_histogram(binwidth = 5, fill = "seagreen", color = "white") +
+  facet_wrap(~ track, scales = "free_y") +
+  labs(
+    title = "Distribution of Fibre Coverage by Track",
+    subtitle = "Left-skewed: saturated near 90-100% with a long left tail (rural low-coverage communes)",
+    x = "FTTH fibre coverage (%)",
+    y = "Number of lycées"
+  ) +
+  theme_minimal()
+
+ggsave("output/figures/p2t2_fibre_hist.png", width = 9, height = 5, dpi = 300)
+

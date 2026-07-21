@@ -37,3 +37,23 @@ Continuous model variables, 2023 cross-section (`df_reg`, n = 4,340: GT 2,331 / 
 5. **IPS_std in Pro — >50% missing.** Pro IPS_std has 1,087 NA of ~2,009 (n=922 valid) vs near-complete in GT. Descriptive-only per Brief (not in regression), but unusable for Pro. Documented; likely tied to the cross-year IPS_std definition difference noted in Step 2.
 
 **Temporal note for Model B:** IPS covers sessions 2023–2026 only; the 2023 headline uses the 2022 IPS definition (single-definition, clean).
+
+## P2-T2 — Distribution Diagnostics (histograms, per track)
+
+Histograms of the three key model variables, split by track. Figures saved to `output/figures/`.
+
+### Findings
+
+**1. DV2_taux (raw Bac rate) — ceiling effect confirmed visually.**
+GT: mass compressed against the 100% ceiling, median 97, with a short left tail. Pro: more dispersed, peak around 80–84, longer spread. Visual confirmation of the ceiling effect — justifies using value-added (DV1), not the raw rate, as Model A's DV.
+`p2t2_dv2_hist.png`
+
+**2. DV1_va (value-added) — symmetric, centered on 0.**
+GT: tight, near-normal bell centered on 0 (SD ≈ 3), i.e. a modest school effect; ~68% of GT lycées fall within ±1 SD (roughly 0 ± 3 points). Pro: much wider (SD ≈ 7.5), fatter tails (down to −55), with a slight negative skew (mean −0.70 < median 0). Being centered on 0 confirms DV1 is a residual by construction and the appropriate DV for Model A. Pro's heavy left tail flags outlier sensitivity for Phase 3 diagnostics.
+`p2t2_dv1_hist.png`
+
+**3. fibre_coverage — left-skewed; compressed at ceiling but with usable variance (Catch 1).**
+Both tracks: mass saturated near 90–100% with a long left tail toward 0 (rural low-coverage communes). Mean < median (GT 91.4 < 93.8; Pro 90.8 < 93.8) confirms the left skew. SD is moderate (GT 11.4, Pro 12.8) — the left tail injects usable variance despite the high median. **Verdict:** fibre is a viable Model A predictor, identified primarily off low-coverage communes; frame as a persistent-infrastructure proxy with the ARCEP-2024 vs COVID-era temporal caveat.
+`p2t2_fibre_hist.png`
+
+**Cross-cutting:** all three diagnostics reinforce the never-pool rule — GT and Pro differ in shape (GT tighter and more ceiling-bound; Pro wider with heavier tails) on every variable.
