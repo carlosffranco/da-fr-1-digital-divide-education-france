@@ -180,6 +180,19 @@ df <- df |>
     urban_rural = factor(if_else(CATEAAV2020 == "30", "Rural", "Urban"),
                          levels = c("Urban", "Rural")),
     
+    # Urban/rural classification — 3-level coding (P2-T3 decision)
+    # CATEAAV2020: 11/12/13 = urban centres, 20 = suburban belt, 30 = rural.
+    # Binary coding collapsed the suburban belt (~750 lycees) into "Urban";
+    # 3-level coding preserves it. Reference level = Urban core (largest group).
+    urban_rural3 = case_when(
+      CATEAAV2020 %in% c("11", "12", "13") ~ "Urban core",
+      CATEAAV2020 == "20"                  ~ "Suburban",
+      CATEAAV2020 == "30"                  ~ "Rural",
+      .default = NA_character_
+    ),
+    urban_rural3 = factor(urban_rural3,
+                          levels = c("Urban core", "Suburban", "Rural")),
+    
     # exclude_regression flag: 2020 = COVID automatic passes
     exclude_regression = (annee == "2020")
   )

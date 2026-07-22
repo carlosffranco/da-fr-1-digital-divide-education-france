@@ -100,3 +100,28 @@ df_reg |>
 
 ggsave("output/figures/p2t2_fibre_hist.png", width = 9, height = 5, dpi = 300)
 
+# ------------------------------------------------------------
+# P2-T3 — URBAN/RURAL CODING DECISION (Catch 2)
+# ------------------------------------------------------------
+
+# Full CATEAAV2020 distribution per track (the 5 real categories)
+# 11 = large urban centre, 12 = mid, 13 = small urban centre,
+# 20 = suburban belt (couronne), 30 = rural / outside AAV
+df_reg |>
+  count(track, CATEAAV2020) |>
+  pivot_wider(names_from = track, values_from = n, values_fill = 0) |>
+  arrange(CATEAAV2020)
+
+# Compare against the current binary
+df_reg |>
+  count(track, urban_rural)
+
+# Adopted coding: 3-level urban_rural3 (created in 03_execute_joins.R)
+df_reg |>
+  count(track, urban_rural3) |>
+  pivot_wider(names_from = track, values_from = n, values_fill = 0)
+
+# Consistency check: binary vs 3-level coding
+df_reg |>
+  count(urban_rural, urban_rural3)
+

@@ -42,6 +42,8 @@ Continuous model variables, 2023 cross-section (`df_reg`, n = 4,340: GT 2,331 / 
 
 Histograms of the three key model variables, split by track. Figures saved to `output/figures/`.
 
+**Note on missing values:** histograms are computed on non-missing rows (NAs filtered explicitly before plotting). Per-variable NA counts are in the P2-T1 table. Exclusions are minor and non-systematic — the largest are IPS_std in Pro (1,087 NA, descriptive-only, not used in regression), poverty_rate (GT 87 / Pro 97, from INSEE "s"/"nd" suppression codes), median_income (GT 46 / Pro 40), and DV1_va (GT 12 / Pro 14). DV2_taux has 0 NA.
+
 ### Findings
 
 **1. DV2_taux (raw Bac rate) — ceiling effect confirmed visually.**
@@ -57,3 +59,56 @@ Both tracks: mass saturated near 90–100% with a long left tail toward 0 (rural
 `p2t2_fibre_hist.png`
 
 **Cross-cutting:** all three diagnostics reinforce the never-pool rule — GT and Pro differ in shape (GT tighter and more ceiling-bound; Pro wider with heavier tails) on every variable.
+
+### P2-T3 — Urban/rural coding decision
+
+**Issue (Lead Catch 2).** The Brief provisionally adopted a binary coding
+(`urban_rural`: Rural if CATEAAV2020 == 30, Urban otherwise). At lycée level this
+produces a near-empty Rural cell and collapses all urban gradations into one group.
+Phase 2 was tasked with tabulating the full CATEAAV2020 distribution and
+recommending a coding before Phase 3.
+
+**Full CATEAAV2020 distribution (2023 cross-section, per track).**
+
+| CATEAAV2020 | Category | GT | Pro |
+|---|---|---:|---:|
+| 11 | Large urban centre | 1,420 | 1,147 |
+| 12 | Mid-sized urban centre | 473 | 422 |
+| 13 | Small urban centre | 38 | 33 |
+| 20 | Suburban belt (couronne) | 376 | 371 |
+| 30 | Rural / outside AAV | 22 | 34 |
+| NA | Unmatched commune | 2 | 2 |
+
+**Findings.**
+1. The binary coding hides a substantial group: 747 lycées (17.2% of the sample)
+   sit in the suburban belt (code 20) and were classified as "Urban", despite
+   being structurally distinct from urban centres.
+2. The Rural cell is genuinely small (56 lycées, 1.3%). This is a feature of the
+   French school map — lycées are concentrated in urban areas — not a data defect.
+3. Codes 13 (71 lycées) and 30 (56 lycées) are too small to support standalone
+   regression coefficients; codes 11 and 12 are large and substantively similar
+   (urban centres of different size).
+
+**Decision.** Adopt a 3-level coding, `urban_rural3`, with Urban core as the
+reference level:
+
+| Level | Groups CATEAAV2020 | GT | Pro |
+|---|---|---:|---:|
+| Urban core (reference) | 11, 12, 13 | 1,931 | 1,602 |
+| Suburban | 20 | 376 | 371 |
+| Rural | 30 | 22 | 34 |
+
+**Rationale.** The 3-level coding recovers the urban-core / suburban distinction
+erased by the binary (17.2% of the sample) while avoiding the near-empty cells
+that a raw 5-level coding would produce. Rural is retained as a separate level
+rather than merged into a combined peripheral category: the study's research
+question concerns territorial inequality, and dissolving the rural category would
+make the rural penalty unmeasurable by construction. Urban core is set as the
+reference level because it is the largest and substantively natural baseline;
+using a small group as reference would inflate standard errors on all contrasts.
+
+**Caveat for Phase 3.** The Rural coefficient will be estimated on 22 (GT) and 34
+(Pro) schools. It must be reported with wide confidence intervals and interpreted
+with caution; it is indicative, not conclusive. The binary `urban_rural` is
+retained in the dataset and will be used as a robustness check to verify that
+results are not driven by the coding choice.
