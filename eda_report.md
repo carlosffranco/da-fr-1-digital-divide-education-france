@@ -112,3 +112,47 @@ using a small group as reference would inflate standard errors on all contrasts.
 with caution; it is indicative, not conclusive. The binary `urban_rural` is
 retained in the dataset and will be used as a robustness check to verify that
 results are not driven by the coding choice.
+
+### P2-T4 — Correlation matrix & collinearity pre-check
+
+**Method.** Pearson correlations among the two DVs and the four continuous
+predictors, computed separately per track on the 2023 cross-section
+(`use = "pairwise.complete.obs"`). This is a bivariate pre-check; VIF on the
+estimation sample (Phase 3) is the authoritative multicollinearity diagnostic.
+
+**Findings.**
+
+1. **Only one predictor pair exceeds the |r| > 0.6 threshold:**
+   `median_income` ↔ `poverty_rate` (GT −0.74, Pro −0.77). This is expected by
+   construction — the poverty rate is defined on the lower tail of the same income
+   distribution. Implied bivariate VIF is approximately 2.2 (GT) and 2.5 (Pro),
+   well below the VIF > 5 threshold. Both variables are retained: they capture
+   distinct constructs (territorial resource level vs. concentration of
+   deprivation). Flagged for VIF confirmation in Phase 3.
+
+2. **Second pair to monitor:** `IPS_mean` ↔ `median_income` (GT 0.58, Pro 0.36).
+   Below threshold, but it means the multivariate VIF for `median_income` in
+   Model B will exceed the bivariate estimate above.
+
+3. **The IVAL circularity argument is empirically confirmed.** `DV1_va` ↔
+   `IPS_mean` is 0.05 (GT) and 0.00 (Pro). The value-added score carries
+   essentially no linear association with school-level parental SES, consistent
+   with DEPP's model already netting out intake composition. This validates the
+   Model A / Model B architecture: IPS is correctly excluded from Model A.
+
+4. **`fibre_coverage` shows very weak bivariate association with both DVs**
+   (DV2: GT 0.15, Pro 0.01; DV1: GT −0.11, Pro −0.05). Combined with its
+   compressed distribution (P2-T2) and its temporal misalignment with the COVID
+   exposure window, a non-significant coefficient in Phase 3 is plausible. This
+   would itself be a substantive result — supply-side infrastructure availability
+   would not predict post-COVID attainment net of socioeconomic context — and is
+   stated here in advance of estimation.
+
+5. **The socioeconomic gradient is markedly stronger in GT than in Pro.**
+   `DV2_taux` ↔ `IPS_mean` is 0.63 in GT versus 0.40 in Pro; `IPS_mean` ↔
+   `median_income` is 0.58 versus 0.36. Track-stratified estimation is therefore
+   warranted not only by differing means (P2-T1) but by a differing association
+   structure.
+
+**No transformation flags raised at this stage.** Skew-related transformation
+decisions (e.g. log income) are addressed in the Phase 3 readiness section.

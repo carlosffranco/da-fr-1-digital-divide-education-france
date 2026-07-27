@@ -125,3 +125,31 @@ df_reg |>
 df_reg |>
   count(urban_rural, urban_rural3)
 
+# ------------------------------------------------------------
+# P2-T4 — CORRELATION MATRIX & COLLINEARITY PRE-CHECK
+# ------------------------------------------------------------
+# Pearson correlations among continuous model variables, per track.
+# Pre-check only: VIF on the estimation sample (Phase 3) is the
+# authoritative multicollinearity diagnostic.
+
+cor_vars <- c("DV1_va", "DV2_taux", "IPS_mean",
+              "fibre_coverage", "median_income", "poverty_rate")
+
+# --- GT ---
+cor_gt <- df_reg |>
+  filter(track == "GT") |>
+  select(all_of(cor_vars)) |>
+  cor(use = "pairwise.complete.obs") |>
+  round(2)
+
+cor_gt
+
+# --- Pro ---
+cor_pro <- df_reg |>
+  filter(track == "Pro") |>
+  select(all_of(cor_vars)) |>
+  cor(use = "pairwise.complete.obs") |>
+  round(2)
+
+cor_pro
+
