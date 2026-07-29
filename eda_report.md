@@ -156,3 +156,106 @@ estimation sample (Phase 3) is the authoritative multicollinearity diagnostic.
 
 **No transformation flags raised at this stage.** Skew-related transformation
 decisions (e.g. log income) are addressed in the Phase 3 readiness section.
+
+### P2-T5 — Bivariate scatter plots (linear vs loess fit)
+
+**Method.** Scatter plots of each dependent variable against the continuous
+predictors, faceted by track, on the 2023 cross-section. Each panel overlays a
+linear fit (the functional form Phase 3 will estimate) and a loess fit
+(unconstrained shape). Divergence between the two indicates non-linearity that a
+correlation coefficient cannot detect. NAs in either plotted variable are filtered
+explicitly. Six figures produced (three per DV), stored in `output/figures/`.
+
+Note on reading the loess: in regions with few observations — notably
+`fibre_coverage` below 75% and `poverty_rate` above 35% — the loess curve is
+unstable and is not interpreted as evidence.
+
+---
+
+#### A. Dependent variable validation — DV1_va vs IPS_mean
+
+This plot is not a predictor screen. `IPS_mean` is excluded from Model A by
+design; the plot tests whether that exclusion is empirically justified, i.e.
+whether the IVAL value-added score has in fact netted out school intake
+composition as DEPP's methodology states.
+
+**Result: the test is passed.** The linear fit is flat at zero in both tracks
+(r = 0.05 GT, 0.00 Pro). Value-added carries essentially no linear association
+with school-level parental SES. The circularity argument underlying the Model A /
+Model B split is therefore confirmed on this dataset, not merely assumed from
+source documentation.
+
+---
+
+#### B. Predictor screening — DV2_taux (raw pass rate)
+
+1. **`IPS_mean` — strong but non-linear in GT.** The relationship is the
+   strongest in the study (r = 0.63 GT), but the loess is concave: steep at low
+   IPS, flattening above roughly IPS 120 as schools approach the 100% ceiling.
+   The linear fit extrapolates above 100% at the top of the IPS range — an
+   arithmetically impossible prediction. In Pro the two fits nearly coincide and
+   the linear assumption holds; Pro's median pass rate (84%) sits well below the
+   ceiling. This is direct visual support for the Brief's decision to treat DV1_va
+   as the primary dependent variable.
+
+2. **`fibre_coverage` — flat where the data are.** Observations are concentrated
+   between 85% and 100% coverage (restricted range, consistent with P2-T2). Within
+   that region both fits are flat; the apparent rise below 50% coverage rests on a
+   handful of observations. In Pro the linear fit is essentially horizontal
+   (r = 0.01). Schools in communes with 0% FTTH coverage span pass rates from 56%
+   to 100%, indicating that other factors dominate entirely. Non-linearity does not
+   rescue this predictor.
+
+3. **`poverty_rate` — linear and well behaved.** Observations span 5–52% with
+   density throughout, and the two fits nearly coincide in both tracks. Negative
+   slope as expected. The mild downward deviation of the loess above 35% poverty in
+   GT is not supported by sufficient data to justify a quadratic term.
+
+---
+
+#### C. Predictor screening — DV1_va (value-added, primary DV)
+
+All three predictors produce flat fits close to zero in both tracks, consistent
+with the correlation matrix (fibre −0.11 / −0.05; poverty 0.08 / 0.02; income
+−0.06 / −0.03). Point clouds are symmetric around zero, with no ceiling
+truncation — the structural advantage of value-added over the raw rate.
+
+Two clarifications on interpretation:
+
+- The zero-centring of DV1_va is mechanical (it is a residual). The **flatness
+  against territorial predictors is not.** DEPP's value-added model adjusts for
+  student composition (PCS variables); it does not adjust for commune broadband
+  coverage, income, or poverty. Those predictors were free to show association
+  with DV1_va and do not.
+- Apparent widening of the vertical spread at high `fibre_coverage` reflects
+  observation density, not heteroskedasticity: 90% of schools sit in that range.
+
+**Expected consequence for Phase 3, stated in advance of estimation.** Model A
+is likely to return a very low R² (order of 1–2% in GT, below 1% in Pro) with
+territorial coefficients close to zero. This would constitute a substantive
+finding rather than a null result: net of student intake composition, territorial
+conditions — digital infrastructure availability, commune income, commune poverty
+— would explain almost none of the variation in lycée value-added. Such a result
+is consistent with the Coleman tradition cited in the analytical framework and
+would locate post-COVID educational inequality in the social composition of
+school intakes rather than in municipal territorial conditions. Model B, where
+`IPS_mean` correlates 0.63 with the raw pass rate in GT, is expected to carry the
+explanatory weight.
+
+---
+
+#### D. Observations carried to Phase 3
+
+| # | Observation | Implication |
+|---|---|---|
+| 1 | Ceiling effect in DV2_taux (GT): linear fit predicts >100% at high IPS | Model B on GT is misspecified at the upper bound; reinforces DV1_va as primary DV |
+| 2 | Variance compression near the GT ceiling | Possible heteroskedasticity — Breusch-Pagan test decides |
+| 3 | Vertical striping in all commune-level predictor plots: schools in the same commune share identical x values | Observations are clustered within commune; conventional standard errors are downward-biased. Cluster-robust SE (by commune) required |
+| 4 | Isolated extreme values in Pro DV1_va (−55 to +29) | Likely small entry cohorts; check `presents` and run influence diagnostics (Cook's distance) |
+| 5 | Restricted range in `fibre_coverage` | Limited power to identify an effect regardless of specification; state alongside the temporal-misalignment caveat |
+
+**No transformation flags raised.** No predictor shows non-linearity against
+DV1_va that a transformation would correct. The one clear non-linearity —
+`IPS_mean` vs DV2_taux in GT — is a bounded-outcome artefact, not a functional
+form issue, and is addressed by the choice of primary DV rather than by
+transforming a predictor.

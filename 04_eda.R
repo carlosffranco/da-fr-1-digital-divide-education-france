@@ -153,3 +153,147 @@ cor_pro <- df_reg |>
 
 cor_pro
 
+# ------------------------------------------------------------
+# P2-T5 — BIVARIATE SCATTER PLOTS (linear vs loess fit)
+# ------------------------------------------------------------
+# Solid line = linear fit (what Phase 3 will estimate).
+# Dashed line = loess fit (unconstrained shape).
+# Divergence between the two signals non-linearity.
+
+# --- DV2 vs IPS_mean ---
+p_dv2_ips <- df_reg |>
+  filter(!is.na(DV2_taux), !is.na(IPS_mean)) |>
+  ggplot(aes(x = IPS_mean, y = DV2_taux)) +
+  geom_point(alpha = 0.2, size = 0.8) +
+  geom_smooth(method = "lm",    se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "loess", se = FALSE, colour = "darkorange",
+              linetype = "dashed") +
+  facet_wrap(~ track) +
+  labs(
+    title    = "Bac pass rate vs school social index, by track",
+    subtitle = "Solid = linear fit; dashed = loess fit",
+    x = "IPS_mean (school social position index)",
+    y = "Bac pass rate (%)"
+  ) +
+  theme_minimal()
+
+p_dv2_ips
+
+ggsave("output/figures/p2t5_dv2_ips.png", p_dv2_ips,
+       width = 9, height = 5, dpi = 300)
+
+# --- DV2 vs fibre_coverage ---
+p_dv2_fibre <- df_reg |>
+  filter(!is.na(DV2_taux), !is.na(fibre_coverage)) |>
+  ggplot(aes(x = fibre_coverage, y = DV2_taux)) +
+  geom_point(alpha = 0.2, size = 0.8) +
+  geom_smooth(method = "lm",    se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "loess", se = FALSE, colour = "darkorange",
+              linetype = "dashed") +
+  facet_wrap(~ track) +
+  labs(
+    title    = "Bac pass rate vs FTTH coverage, by track",
+    subtitle = "Solid = linear fit; dashed = loess fit",
+    x = "FTTH coverage (% of premises)",
+    y = "Bac pass rate (%)"
+  ) +
+  theme_minimal()
+
+p_dv2_fibre
+
+ggsave("output/figures/p2t5_dv2_fibre.png", p_dv2_fibre,
+       width = 9, height = 5, dpi = 300)
+
+# --- DV2 vs poverty_rate ---
+p_dv2_poverty <- df_reg |>
+  filter(!is.na(DV2_taux), !is.na(poverty_rate)) |>
+  ggplot(aes(x = poverty_rate, y = DV2_taux)) +
+  geom_point(alpha = 0.2, size = 0.8) +
+  geom_smooth(method = "lm",    se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "loess", se = FALSE, colour = "darkorange",
+              linetype = "dashed") +
+  facet_wrap(~ track) +
+  labs(
+    title    = "Bac pass rate vs commune poverty rate, by track",
+    subtitle = "Solid = linear fit; dashed = loess fit",
+    x = "Poverty rate (%)",
+    y = "Bac pass rate (%)"
+  ) +
+  theme_minimal()
+
+p_dv2_poverty
+
+ggsave("output/figures/p2t5_dv2_poverty.png", p_dv2_poverty,
+       width = 9, height = 5, dpi = 300)
+
+# --- DV1 (value-added) vs IPS_mean ---
+p_dv1_ips <- df_reg |>
+  filter(!is.na(DV1_va), !is.na(IPS_mean)) |>
+  ggplot(aes(x = IPS_mean, y = DV1_va)) +
+  geom_point(alpha = 0.2, size = 0.8) +
+  geom_hline(yintercept = 0, colour = "grey40", linewidth = 0.3) +
+  geom_smooth(method = "lm",    se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "loess", se = FALSE, colour = "darkorange",
+              linetype = "dashed") +
+  facet_wrap(~ track) +
+  labs(
+    title    = "Value-added score vs school social index, by track",
+    subtitle = "Solid = linear fit; dashed = loess fit; grey line = zero value-added",
+    x = "IPS_mean (school social position index)",
+    y = "Value-added of Bac pass rate (points)"
+  ) +
+  theme_minimal()
+
+p_dv1_ips
+
+ggsave("output/figures/p2t5_dv1_ips.png", p_dv1_ips,
+       width = 9, height = 5, dpi = 300)
+
+
+# --- DV1 (value-added) vs fibre_coverage ---
+p_dv1_fibre <- df_reg |>
+  filter(!is.na(DV1_va), !is.na(fibre_coverage)) |>
+  ggplot(aes(x = fibre_coverage, y = DV1_va)) +
+  geom_point(alpha = 0.2, size = 0.8) +
+  geom_hline(yintercept = 0, colour = "grey40", linewidth = 0.3) +
+  geom_smooth(method = "lm",    se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "loess", se = FALSE, colour = "darkorange",
+              linetype = "dashed") +
+  facet_wrap(~ track) +
+  labs(
+    title    = "Value-added score vs FTTH coverage, by track",
+    subtitle = "Solid = linear fit; dashed = loess fit; grey line = zero value-added",
+    x = "FTTH coverage (% of premises)",
+    y = "Value-added of Bac pass rate (points)"
+  ) +
+  theme_minimal()
+
+p_dv1_fibre
+
+ggsave("output/figures/p2t5_dv1_fibre.png", p_dv1_fibre,
+       width = 9, height = 5, dpi = 300)
+
+
+# --- DV1 (value-added) vs poverty_rate ---
+p_dv1_poverty <- df_reg |>
+  filter(!is.na(DV1_va), !is.na(poverty_rate)) |>
+  ggplot(aes(x = poverty_rate, y = DV1_va)) +
+  geom_point(alpha = 0.2, size = 0.8) +
+  geom_hline(yintercept = 0, colour = "grey40", linewidth = 0.3) +
+  geom_smooth(method = "lm",    se = FALSE, colour = "steelblue") +
+  geom_smooth(method = "loess", se = FALSE, colour = "darkorange",
+              linetype = "dashed") +
+  facet_wrap(~ track) +
+  labs(
+    title    = "Value-added score vs commune poverty rate, by track",
+    subtitle = "Solid = linear fit; dashed = loess fit; grey line = zero value-added",
+    x = "Poverty rate (%)",
+    y = "Value-added of Bac pass rate (points)"
+  ) +
+  theme_minimal()
+
+p_dv1_poverty
+
+ggsave("output/figures/p2t5_dv1_poverty.png", p_dv1_poverty,
+       width = 9, height = 5, dpi = 300)
+
