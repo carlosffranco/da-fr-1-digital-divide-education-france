@@ -297,3 +297,108 @@ p_dv1_poverty
 ggsave("output/figures/p2t5_dv1_poverty.png", p_dv1_poverty,
        width = 9, height = 5, dpi = 300)
 
+# ------------------------------------------------------------
+# P2-T6 — GROUP COMPARISONS & PRE/POST-COVID TREND
+# ------------------------------------------------------------
+
+# --- A1: DV2 by urban/rural category ---
+p_box_dv2_urb <- df_reg |>
+  filter(!is.na(DV2_taux), !is.na(urban_rural3)) |>
+  ggplot(aes(x = urban_rural3, y = DV2_taux)) +
+  geom_boxplot(outlier.alpha = 0.3, outlier.size = 0.8) +
+  facet_wrap(~ track) +
+  labs(
+    title    = "Bac pass rate by urban/rural category, by track",
+    subtitle = "Rural cells are small (GT n = 22, Pro n = 34) — read with caution",
+    x = NULL,
+    y = "Bac pass rate (%)"
+  ) +
+  theme_minimal()
+
+p_box_dv2_urb
+
+ggsave("output/figures/p2t6_box_dv2_urban.png", p_box_dv2_urb,
+       width = 9, height = 5, dpi = 300)
+
+# --- A2: DV1 (value-added) by urban/rural category ---
+p_box_dv1_urb <- df_reg |>
+  filter(!is.na(DV1_va), !is.na(urban_rural3)) |>
+  ggplot(aes(x = urban_rural3, y = DV1_va)) +
+  geom_boxplot(outlier.alpha = 0.3, outlier.size = 0.8) +
+  geom_hline(yintercept = 0, colour = "grey40", linewidth = 0.3) +
+  facet_wrap(~ track) +
+  labs(
+    title    = "Value-added score by urban/rural category, by track",
+    subtitle = "Grey line = zero value-added. Rural cells are small — read with caution",
+    x = NULL,
+    y = "Value-added of Bac pass rate (points)"
+  ) +
+  theme_minimal()
+
+p_box_dv1_urb
+
+ggsave("output/figures/p2t6_box_dv1_urban.png", p_box_dv1_urb,
+       width = 9, height = 5, dpi = 300)
+
+# --- A3: DV2 by school sector (public/private) ---
+p_box_dv2_sec <- df_reg |>
+  filter(!is.na(DV2_taux), !is.na(secteur)) |>
+  ggplot(aes(x = secteur, y = DV2_taux)) +
+  geom_boxplot(outlier.alpha = 0.3, outlier.size = 0.8) +
+  facet_wrap(~ track) +
+  labs(
+    title = "Bac pass rate by school sector, by track",
+    x = NULL,
+    y = "Bac pass rate (%)"
+  ) +
+  theme_minimal()
+
+p_box_dv2_sec
+
+ggsave("output/figures/p2t6_box_dv2_sector.png", p_box_dv2_sec,
+       width = 9, height = 5, dpi = 300)
+
+# Cell sizes behind the boxplots (report alongside the figures)
+df_reg |> count(track, urban_rural3)
+df_reg |> count(track, secteur)
+
+# --- B: DV2 trend 2019-2024 by urban/rural category (2020 excluded) ---
+# Outcome-only trend. Territorial predictors are single-vintage and
+# time-invariant within school; urban_rural3 is a grouping variable here,
+# not a time-varying predictor.
+# Note: `annee` is stored as character (it serves as a join/filter key).
+# It is converted to integer here for the plot only, so the x axis is
+# continuous and lines can connect across years.
+
+trend_dv2 <- df_full |>
+  filter(annee %in% as.character(2019:2024),
+         annee != "2020",
+         !is.na(DV2_taux),
+         !is.na(urban_rural3)) |>
+  group_by(track, annee, urban_rural3) |>
+  summarise(mean_dv2 = mean(DV2_taux), n = n(), .groups = "drop") |>
+  mutate(annee_num = as.integer(annee))
+
+trend_dv2
+
+p_trend <- trend_dv2 |>
+  ggplot(aes(x = annee_num, y = mean_dv2,
+             colour = urban_rural3, group = urban_rural3)) +
+  geom_vline(xintercept = 2020, linetype = "dotted", colour = "grey50") +
+  geom_line(linewidth = 0.7) +
+  geom_point(size = 1.5) +
+  facet_wrap(~ track, scales = "free_y") +
+  scale_x_continuous(breaks = c(2019, 2021, 2022, 2023, 2024)) +
+  labs(
+    title    = "Mean Bac pass rate 2019-2024 by urban/rural category",
+    subtitle = "2020 excluded (COVID automatic passes); dotted line marks the excluded year",
+    x = NULL,
+    y = "Mean Bac pass rate (%)",
+    colour = "Category"
+  ) +
+  theme_minimal()
+
+p_trend
+
+ggsave("output/figures/p2t6_trend_dv2.png", p_trend,
+       width = 9, height = 5, dpi = 300)

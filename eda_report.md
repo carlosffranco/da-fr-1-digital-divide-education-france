@@ -259,3 +259,94 @@ DV1_va that a transformation would correct. The one clear non-linearity —
 `IPS_mean` vs DV2_taux in GT — is a bounded-outcome artefact, not a functional
 form issue, and is addressed by the choice of primary DV rather than by
 transforming a predictor.
+
+### P2-T6 — Group comparisons and pre/post-COVID outcome trend
+
+**Method.** Boxplots of both dependent variables across the two categorical
+variables (`urban_rural3`, `secteur`) on the 2023 cross-section, faceted by track.
+Group medians reported alongside cell sizes, since a boxplot conveys no
+information about the number of observations behind it. A pre/post-COVID trend of
+mean pass rate (2019–2024, 2020 excluded) is computed on the full panel
+(`df_full`). Four figures produced, stored in `output/figures/`.
+
+**Note on the trend plot.** `annee` is stored as character (it serves as a join
+and filter key throughout the pipeline) and is converted to integer for this
+figure only, so that the x axis is continuous. Panels use free y scales because
+the two tracks operate at different levels (≈95% vs ≈84%); the shape of each
+trend is comparable across panels, the levels are not.
+
+---
+
+#### A. Urban/rural category
+
+Cell sizes (2023): GT — Urban core 1,931 / Suburban 376 / Rural 22.
+Pro — Urban core 1,602 / Suburban 371 / Rural 34. The Rural boxes are drawn on
+very few schools and are indicative only.
+
+1. **Value-added shows no systematic urban/rural gradient.** All three category
+   boxes sit at or near zero in both tracks. This is not mechanical: DEPP's
+   value-added model adjusts for student composition, not for the territorial
+   classification of the commune, so a gradient was possible and does not appear.
+   Consistent with the flat bivariate fits reported in P2-T5.
+
+2. **Raw pass rates differ by category, but modestly in GT.** Urban core and
+   Suburban are close; Rural sits slightly higher, on 22 schools.
+
+---
+
+#### B. School sector
+
+Cell sizes (2023): GT — private under contract 780 / public 1,551.
+Pro — private under contract 508 / public 1,501.
+
+| Track | Sector | Median DV2 (raw rate) | Median DV1 (value-added) |
+|---|---|---:|---:|
+| GT | Private under contract | 99 | 1 |
+| GT | Public | 95 | −1 |
+| Pro | Private under contract | 94 | 2 |
+| Pro | Public | 81 | −1 |
+
+**Most of the private-sector advantage is intake composition, not school
+effectiveness.** In the vocational track the raw gap of 13 percentage points
+narrows to roughly 3 points once intake is netted out — approximately three
+quarters of the apparent advantage is attributable to student composition. In the
+general track the raw gap of 4 points narrows to roughly 2.
+
+A residual private advantage remains in value-added terms in both tracks. It is
+real but small relative to the raw differential. Because value-added is reported
+as an integer in the source data, these median differences are indicative;
+Model B will quantify the sector effect with standard errors.
+
+**Implication.** `secteur` is not a specified predictor in either model as
+written, but the size of the raw differential means it cannot be ignored. The
+Brief already schedules a public-sector-only sensitivity analysis in Phase 3;
+this finding gives that check a concrete motivation.
+
+---
+
+#### C. Pre/post-COVID trend, 2019–2024
+
+Mean pass rate by track and urban/rural category, 2020 excluded. Cell sizes are
+stable across years (e.g. Pro Rural n = 34 in every year), so the trend is not
+contaminated by changes in panel composition within these categories.
+
+1. **2021 is an outlier year across all categories.** GT rises from roughly 92%
+   (2019) to 97% (2021); Pro from roughly 83% to 87%. Rates then decline towards
+   pre-pandemic levels. This reflects the relaxed assessment arrangements of the
+   2021 session. **2021 should be treated as methodologically atypical alongside
+   2020**, which the original design did not anticipate. It does not affect the
+   regression models (2023 cross-section) but constrains any descriptive
+   before/after framing.
+
+2. **A persistent rural advantage in the vocational track.** In Pro, Rural
+   schools exceed Urban core by 5–7 percentage points in every year observed
+   (2019: 89.7 vs 82.9; 2024: 89.2 vs 84.2). The pattern is stable, not a
+   single-year artefact, and runs **contrary to the rural-penalty hypothesis
+   stated in the Brief**. It rests on 34 schools and plausibly reflects
+   composition or school-size effects rather than a territorial advantage; it is
+   reported as an observation requiring confirmation, not as a finding.
+
+3. **The urban/rural gap does not widen after COVID.** The Pro gap is
+   approximately 6 points before and after the pandemic. There is no descriptive
+   evidence that the disruption amplified territorial inequality in Bac outcomes.
+   Stated because the study's framing anticipated the opposite.
