@@ -350,3 +350,94 @@ contaminated by changes in panel composition within these categories.
    approximately 6 points before and after the pandemic. There is no descriptive
    evidence that the disruption amplified territorial inequality in Bac outcomes.
    Stated because the study's framing anticipated the opposite.
+   
+   ---
+
+## Phase 3 readiness
+
+This section consolidates the decisions and diagnostic flags produced by Phase 2
+and states what Phase 3 must carry forward. It is the basis on which sign-off is
+requested.
+
+### 1. Specification decisions taken
+
+| Decision | Resolution | Evidence |
+|---|---|---|
+| Urban/rural coding | `urban_rural3` — 3 levels (Urban core / Suburban / Rural), reference = Urban core. Binary `urban_rural` retained for robustness check | P2-T3 |
+| Track handling | Estimate separately for GT and Pro. Never pool | P2-T1, P2-T4, P2-T5 |
+| Primary dependent variable | `DV1_va` (value-added) confirmed as primary; `DV2_taux` is bounded above and misspecified by a linear fit in GT | P2-T5 |
+| IPS exclusion from Model A | Confirmed empirically, not merely assumed | P2-T4, P2-T5 §A |
+| Income / poverty collinear pair | Both retained. Implied bivariate VIF ≈ 2.2–2.5, below threshold | P2-T4 |
+| Variable transformations | **None required.** No predictor shows non-linearity against `DV1_va` that a transformation would correct | P2-T5 |
+
+### 2. Diagnostic flags carried to Phase 3
+
+| # | Flag | Required action |
+|---|---|---|
+| 1 | **Clustering by commune.** Commune-level predictors are shared across schools in the same commune; observations are not independent | Apply cluster-robust standard errors clustered on commune (`sandwich` / `lmtest`). Coefficients are unaffected; conventional SEs are downward-biased |
+| 2 | **Ceiling effect in DV2_taux (GT).** Linear fit extrapolates above 100% at high IPS | Report Model B on GT with this limitation stated. Do not present fitted values in the upper range without qualification |
+| 3 | **Possible heteroskedasticity (GT).** Variance is compressed near the ceiling | Run Breusch-Pagan. Apply robust SEs if significant — this is subsumed by the cluster-robust treatment in flag 1 |
+| 4 | **Extreme values in Pro `DV1_va`** (range −55 to +29), plausibly small entry cohorts | Run Cook's distance. Cross-check against `presents`. Report whether conclusions are sensitive to their exclusion; do not delete them silently |
+| 5 | **Restricted range in `fibre_coverage`** (most observations between 85% and 100%) | State alongside the temporal-misalignment caveat. Limited power to identify an effect regardless of specification |
+
+### 3. Specification issue requiring reframing
+
+The Brief schedules a panel fixed-effects robustness check on UAI. **As written
+this is not viable.** All territorial predictors (`fibre_coverage`,
+`median_income`, `poverty_rate`, `urban_rural3`) are single-vintage and therefore
+time-invariant within school. School fixed effects would absorb them entirely,
+leaving nothing to estimate.
+
+Options for Phase 3, to be decided with the Lead:
+- Drop the panel check and rely on cross-sectional estimation with cluster-robust SEs.
+- Replace it with a different robustness strategy (e.g. estimating on an adjacent year and comparing coefficients).
+- Retain a panel specification only for the outcome trend, without territorial predictors — descriptive, not identifying.
+
+### 4. Expectations declared in advance of estimation
+
+Recorded before any model is fitted, so that results cannot be rationalised
+retrospectively.
+
+- **Model A is expected to return a very low R²** (order of 1–2% in GT, below 1%
+  in Pro), with territorial coefficients close to zero. If this occurs it is a
+  substantive finding, not a null result: net of student intake composition,
+  territorial conditions explain almost none of the variation in lycée
+  value-added.
+- **`fibre_coverage` is expected to be non-significant** in both models. Its
+  bivariate association with both DVs is near zero and its distribution is
+  compressed.
+- **`IPS_mean` is expected to be the dominant predictor in Model B**, particularly
+  in GT (r = 0.63 with the raw pass rate).
+
+### 5. Additional analysis warranted by Phase 2 findings
+
+Not in the original plan; raised by the exploratory results.
+
+- **Sector effect.** The private/public raw gap is 13 points in Pro but roughly 3
+  points in value-added terms — approximately three quarters of the apparent
+  advantage is intake composition. `secteur` is not a specified predictor in
+  either model, but the magnitude warrants including it, or at minimum executing
+  the public-only sensitivity analysis already scheduled in the Brief.
+- **2021 as an atypical session.** The Brief excludes 2020 only. Phase 2 shows
+  2021 pass rates spike across all categories and both tracks under relaxed
+  assessment arrangements. This does not affect the 2023 cross-section but
+  constrains any descriptive pre/post-COVID framing and should be noted in the
+  limitations section.
+- **Rural advantage in Pro.** Rural vocational schools exceed urban core by 5–7
+  points in every year observed, contrary to the rural-penalty hypothesis. Based
+  on 34 schools; plausibly composition or school-size driven. Worth examining
+  against `presents` before any interpretation is offered.
+
+### 6. Sign-off requested
+
+Phase 3 is gated on Lead approval of:
+
+1. The `urban_rural3` coding decision and its reference level (§1).
+2. The confirmation that no variable transformations are required (§1).
+3. The five diagnostic flags and their required actions (§2).
+4. A decision on the panel fixed-effects reframing (§3).
+5. Whether `secteur` enters the models as a predictor or remains a sensitivity check (§5).
+
+---
+
+*End of Phase 2 — Descriptive Statistics & Exploratory Analysis.*
