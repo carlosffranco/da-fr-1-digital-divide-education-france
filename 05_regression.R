@@ -90,3 +90,61 @@ summary(model_A_pro)
 coef_test(model_A_pro,
           vcov    = "CR2",
           cluster = df_pro_A$commune_terr)
+
+# ------------------------------------------------------------
+# T2 — MODEL B (secondary) and MODEL B+ (sector control)
+# DV = raw Bac pass rate. IPS_mean included (no circularity here).
+# B and B+ are fitted on an identical sample so that coefficient
+# movement reflects the added control, not a change in the data.
+# ------------------------------------------------------------
+
+# One frame per track, built on the Model B+ variable set.
+# secteur has no missing values, so N is identical for B and B+.
+df_gt_B <- df_reg |>
+  filter(track == "GT",  complete.cases(pick(all_of(vars_Bplus))))
+
+df_pro_B <- df_reg |>
+  filter(track == "Pro", complete.cases(pick(all_of(vars_Bplus))))
+
+nrow(df_gt_B)    # expect 2237
+nrow(df_pro_B)   # expect 1907
+
+
+# --- Model B, GT (baseline: Brief specification) ---
+model_B_gt <- lm(DV2_taux ~ IPS_mean + fibre_coverage + median_income +
+                   poverty_rate + urban_rural3,
+                 data = df_gt_B)
+
+summary(model_B_gt)
+
+coef_test(model_B_gt, vcov = "CR2", cluster = df_gt_B$commune_terr)
+
+
+# --- Model B+, GT (adds secteur) ---
+model_Bp_gt <- lm(DV2_taux ~ IPS_mean + fibre_coverage + median_income +
+                    poverty_rate + urban_rural3 + secteur,
+                  data = df_gt_B)
+
+summary(model_Bp_gt)
+
+coef_test(model_Bp_gt, vcov = "CR2", cluster = df_gt_B$commune_terr)
+
+
+# --- Model B, Pro ---
+model_B_pro <- lm(DV2_taux ~ IPS_mean + fibre_coverage + median_income +
+                    poverty_rate + urban_rural3,
+                  data = df_pro_B)
+
+summary(model_B_pro)
+
+coef_test(model_B_pro, vcov = "CR2", cluster = df_pro_B$commune_terr)
+
+
+# --- Model B+, Pro (adds secteur) ---
+model_Bp_pro <- lm(DV2_taux ~ IPS_mean + fibre_coverage + median_income +
+                     poverty_rate + urban_rural3 + secteur,
+                   data = df_pro_B)
+
+summary(model_Bp_pro)
+
+coef_test(model_Bp_pro, vcov = "CR2", cluster = df_pro_B$commune_terr)
