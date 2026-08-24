@@ -3,6 +3,10 @@
 # Works on df_reg (certified 2023 cross-section).
 # All models are estimated PER TRACK (GT / Pro) — never pooled.
 # Headline inference: CR2 commune-clustered standard errors.
+
+# Required packages (install once, not part of the analysis):
+#   install.packages(c("tidyverse", "clubSandwich", "lmtest",
+#                      "car", "modelsummary"))
 # ------------------------------------------------------------
 
 library(tidyverse)
@@ -42,3 +46,47 @@ n_eff <- df_reg |>
   )
 
 n_eff
+
+# ------------------------------------------------------------
+# T1 — MODEL A (primary): value-added ~ territorial factors
+# Estimated per track. IPS excluded by design (circularity).
+# Headline inference: CR2 commune-clustered standard errors.
+# ------------------------------------------------------------
+
+library(clubSandwich)
+
+# Complete-case frames per track, matching the T0 recertified N.
+# Rows are filtered before fitting so the cluster vector aligns
+# with the observations lm() actually uses.
+df_gt_A <- df_reg |>
+  filter(track == "GT",  complete.cases(pick(all_of(vars_A))))
+
+df_pro_A <- df_reg |>
+  filter(track == "Pro", complete.cases(pick(all_of(vars_A))))
+
+nrow(df_gt_A)    # expect 2243
+nrow(df_pro_A)   # expect 1909
+
+
+# --- Model A, GT ---
+model_A_gt <- lm(DV1_va ~ fibre_coverage + median_income +
+                   poverty_rate + urban_rural3,
+                 data = df_gt_A)
+
+summary(model_A_gt)
+
+coef_test(model_A_gt,
+          vcov    = "CR2",
+          cluster = df_gt_A$commune_terr)
+
+
+# --- Model A, Pro ---
+model_A_pro <- lm(DV1_va ~ fibre_coverage + median_income +
+                    poverty_rate + urban_rural3,
+                  data = df_pro_A)
+
+summary(model_A_pro)
+
+coef_test(model_A_pro,
+          vcov    = "CR2",
+          cluster = df_pro_A$commune_terr)
