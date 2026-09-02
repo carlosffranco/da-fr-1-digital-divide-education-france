@@ -341,3 +341,37 @@ Wald_test(model_A_gt_dense,
           constraints = constrain_zero(2:6),
           vcov        = "CR2",
           cluster     = df_gt_A_dense$commune_terr)
+
+# ------------------------------------------------------------
+# T3c-bis — Alternative explanations for the fibre association
+# The continuous population-density control (Lead Ruling 3) was
+# not run: NBPERSMENFISC21 was not carried through the Phase 1
+# pipeline. Documented as a limitation — the density mechanism is
+# untested, not ruled out. Two cheaper checks are run instead.
+# ------------------------------------------------------------
+
+# (1) Finer urban gradient: full 5-level CATEAAV2020
+model_A_gt_cat5 <- lm(DV1_va ~ fibre_coverage + median_income +
+                        poverty_rate + factor(CATEAAV2020),
+                      data = df_gt_A)
+
+coef_test(model_A_gt_cat5,
+          vcov    = "CR2",
+          cluster = df_gt_A$commune_terr)
+
+# (2) Regional fixed effects — is the association a regional artefact?
+# No département column was carried through the pipeline, but the
+# département is the first two characters of the INSEE commune code.
+# Derived locally here (analysis-only, not a pipeline change).
+df_gt_A <- df_gt_A |>
+  mutate(dept = str_sub(commune_terr, 1, 2))
+
+n_distinct(df_gt_A$dept)
+
+model_A_gt_dept <- lm(DV1_va ~ fibre_coverage + median_income +
+                        poverty_rate + urban_rural3 + factor(dept),
+                      data = df_gt_A)
+
+coef_test(model_A_gt_dept,
+          vcov    = "CR2",
+          cluster = df_gt_A$commune_terr)[1:6, ]
