@@ -375,3 +375,84 @@ model_A_gt_dept <- lm(DV1_va ~ fibre_coverage + median_income +
 coef_test(model_A_gt_dept,
           vcov    = "CR2",
           cluster = df_gt_A$commune_terr)[1:6, ]
+
+# ------------------------------------------------------------
+# T3d — MODEL A+ : sector effect net of intake (Lead Ruling 4)
+# DV1_va already nets out intake composition via DEPP's model, so
+# the sector coefficient here is the defensible effectiveness
+# estimate — as opposed to Model B+, where the sector coefficient
+# still contains composition that IPS_mean alone does not capture.
+# Caveat: value-added is a residual from DEPP's model, which may
+# itself over- or under-adjust. Not a pure effectiveness measure.
+# ------------------------------------------------------------
+
+# Complete-case frames including secteur.
+# secteur has no missing values, so N matches Model A exactly.
+df_gt_Ap <- df_reg |>
+  filter(track == "GT",  complete.cases(pick(all_of(c(vars_A, "secteur")))))
+
+df_pro_Ap <- df_reg |>
+  filter(track == "Pro", complete.cases(pick(all_of(c(vars_A, "secteur")))))
+
+nrow(df_gt_Ap)    # expect 2243
+nrow(df_pro_Ap)   # expect 1909
+
+
+# --- Model A+, GT ---
+model_Ap_gt <- lm(DV1_va ~ fibre_coverage + median_income +
+                    poverty_rate + urban_rural3 + secteur,
+                  data = df_gt_Ap)
+
+summary(model_Ap_gt)
+
+coef_test(model_Ap_gt,
+          vcov    = "CR2",
+          cluster = df_gt_Ap$commune_terr)
+
+
+# --- Model A+, Pro ---
+model_Ap_pro <- lm(DV1_va ~ fibre_coverage + median_income +
+                     poverty_rate + urban_rural3 + secteur,
+                   data = df_pro_Ap)
+
+summary(model_Ap_pro)
+
+coef_test(model_Ap_pro,
+          vcov    = "CR2",
+          cluster = df_pro_Ap$commune_terr)
+
+# Cluster-robust joint significance for Model A+ (7 coefficients: intercept + 6)
+Wald_test(model_Ap_gt,
+          constraints = constrain_zero(2:7),
+          vcov        = "CR2",
+          cluster     = df_gt_Ap$commune_terr)
+
+Wald_test(model_Ap_pro,
+          constraints = constrain_zero(2:7),
+          vcov        = "CR2",
+          cluster     = df_pro_Ap$commune_terr)
+
+# ------------------------------------------------------------
+# T4 — ROBUSTNESS: urban/rural coding
+# P2-T3 adopted urban_rural3 (3 levels) over the original binary
+# urban_rural. This refits Model A with the binary variable to
+# confirm that the territorial coefficients are not driven by
+# that coding decision.
+# ------------------------------------------------------------
+
+model_A_gt_bin <- lm(DV1_va ~ fibre_coverage + median_income +
+                       poverty_rate + urban_rural,
+                     data = df_gt_A)
+
+coef_test(model_A_gt_bin,
+          vcov    = "CR2",
+          cluster = df_gt_A$commune_terr)
+
+
+model_A_pro_bin <- lm(DV1_va ~ fibre_coverage + median_income +
+                        poverty_rate + urban_rural,
+                      data = df_pro_A)
+
+coef_test(model_A_pro_bin,
+          vcov    = "CR2",
+          cluster = df_pro_A$commune_terr)
