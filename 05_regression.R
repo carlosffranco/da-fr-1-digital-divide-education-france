@@ -456,3 +456,102 @@ model_A_pro_bin <- lm(DV1_va ~ fibre_coverage + median_income +
 coef_test(model_A_pro_bin,
           vcov    = "CR2",
           cluster = df_pro_A$commune_terr)
+
+# ------------------------------------------------------------
+# T5 — PUBLICATION COEFFICIENT TABLES
+# Four specifications (A, B, B+, A+) per track.
+# Coefficients, standard errors AND p-values are taken directly
+# from coef_test(), so significance stars use the Satterthwaite
+# small-sample degrees of freedom rather than large-sample df.
+# This matters for coefficients with few effective df (e.g.
+# median_income, df = 5.0), where large-sample p-values would
+# overstate significance.
+# ------------------------------------------------------------
+
+library(modelsummary)
+
+dir.create("output/tables", showWarnings = FALSE, recursive = TRUE)
+
+# Helper: convert a fitted model + cluster vector into the structure
+# modelsummary expects, carrying CR2 estimates and Satterthwaite p-values.
+ms_from_coeftest <- function(mod, cluster_vec) {
+  ct <- coef_test(mod, vcov = "CR2", cluster = cluster_vec)
+  
+  tidy_part <- data.frame(
+    term      = ct$Coef,
+    estimate  = ct$beta,
+    std.error = ct$SE,
+    p.value   = ct$p_Satt
+  )
+  
+  glance_part <- data.frame(
+    nobs          = nobs(mod),
+    r.squared     = summary(mod)$r.squared,
+    adj.r.squared = summary(mod)$adj.r.squared
+  )
+  
+  out <- list(tidy = tidy_part, glance = glance_part)
+  class(out) <- "modelsummary_list"
+  out
+}
+
+# Readable variable labels (also controls row order)
+var_labels <- c(
+  "IPS_mean"             = "School social index (IPS)",
+  "fibre_coverage"       = "FTTH coverage (%)",
+  "median_income"        = "Median income (EUR)",
+  "poverty_rate"         = "Poverty rate (%)",
+  "urban_rural3Suburban" = "Suburban (ref: Urban core)",
+  "urban_rural3Rural"    = "Rural (ref: Urban core)",
+  "secteurpublic"        = "Public sector (ref: private)",
+  "(Intercept)"          = "Constant"
+)
+
+table_note <- paste(
+  "CR2 cluster-robust standard errors, clustered on commune;",
+  "p-values use Satterthwaite degrees of freedom.",
+  "DV: Models A and A+ = IVAL value-added;",
+  "Models B and B+ = raw Bac pass rate.",
+  "Median income is measured in euros, so its coefficient is small by construction:",
+  "a EUR 1,000 difference corresponds to roughly 0.3 percentage points."
+)
+
+
+# --- GT table ---
+models_gt <- list(
+  "Model A"  = ms_from_coeftest(model_A_gt,  df_gt_A$commune_terr),
+  "Model B"  = ms_from_coeftest(model_B_gt,  df_gt_B$commune_terr),
+  "Model B+" = ms_from_coeftest(model_Bp_gt, df_gt_B$commune_terr),
+  "Model A+" = ms_from_coeftest(model_Ap_gt, df_gt_Ap$commune_terr)
+)
+
+modelsummary(
+  models_gt,
+  coef_map = var_labels,
+  gof_map  = c("nobs", "r.squared", "adj.r.squared"),
+  stars    = c("*" = .05, "**" = .01, "***" = .001),
+  fmt      = fmt_significant(3),
+  title    = "Model results, general and technological track (GT)",
+  notes    = table_note,
+  output   = "output/tables/coefficients_gt.md"
+)
+
+
+# --- Pro table ---
+models_pro <- list(
+  "Model A"  = ms_from_coeftest(model_A_pro,  df_pro_A$commune_terr),
+  "Model B"  = ms_from_coeftest(model_B_pro,  df_pro_B$commune_terr),
+  "Model B+" = ms_from_coeftest(model_Bp_pro, df_pro_B$commune_terr),
+  "Model A+" = ms_from_coeftest(model_Ap_pro, df_pro_Ap$commune_terr)
+)
+
+modelsummary(
+  models_pro,
+  coef_map = var_labels,
+  gof_map  = c("nobs", "r.squared", "adj.r.squared"),
+  stars    = c("*" = .05, "**" = .01, "***" = .001),
+  fmt      = fmt_significant(3),
+  title    = "Model results, vocational track (Pro)",
+  notes    = table_note,
+  output   = "output/tables/coefficients_pro.md"
+)
