@@ -72,6 +72,15 @@ the other way: clustering is not a blanket penalty but a redistribution of
 information, and for a variable concentrated in a few clusters it can cut either
 way.
 
+**Why sector is estimated more precisely than the territorial predictors.**
+`secteur` varies *within* communes — a town can have both a public and a private
+lycée — so clustering barely affects its precision. The territorial predictors are
+constant within a commune by construction, so clustering penalises them heavily.
+This is why the sector coefficient carries a standard error of 0.117 in Model A+
+(GT) while `fibre_coverage` carries 0.008 on a coefficient two orders of magnitude
+smaller, and it is why sector rescues the Pro model where no territorial predictor
+can.
+
 **Choice of cluster level.** `commune_terr` collapses Paris, Lyon and Marseille
 arrondissements into their parent city; `commune_final` keeps them separate.
 `commune_terr` is used as the headline because it is the level at which the
@@ -225,10 +234,14 @@ approximately 9.75 points attributable to which students each sector receives an
 boxplot medians, was approximately 3 points; the estimated coefficient is 3.25
 with a standard error of 0.325.
 
-**In the general track the pattern differs.** The sector coefficient is
-essentially identical in Model B+ (−1.91) and Model A+ (−1.90), meaning the
-private advantage in GT does not shrink when intake is netted out. It is small,
-but it does not appear to be composition.
+**IPS is an adequate summary of intake in GT, but not in Pro.** In the general
+track the sector coefficient barely moves between Model B+ (−1.91) and Model A+
+(−1.90): `IPS_mean` alone already captures essentially all of the intake
+difference between sectors, so applying DEPP's fuller value-added adjustment adds
+almost nothing. In the vocational track it moves substantially — from −9.83 to
+−3.25 — meaning a single social-position index leaves a large part of the
+between-sector intake difference unmeasured. The two tracks differ not only in the
+size of the sector gap but in how well a summary index describes their intakes.
 
 **Sector rescues the Pro model.** Model A in Pro was jointly non-significant with
 an R² of 0.4%. Adding `secteur` raises R² elevenfold to 4.1% and the model becomes
