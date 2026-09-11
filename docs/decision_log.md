@@ -20,6 +20,8 @@ explaining why. The history of the reasoning is the point.
 | [006](#adr-006) | Social index harmonisation across a definitional break | 1 | Accepted |
 | [007](#adr-007) | Withdrawal of the panel fixed-effects claim | 2 | Accepted |
 | [008](#adr-008) | Commune-clustered standard errors (CR2) | 2 | Accepted |
+| [009](#adr-009) | Tables built from coef_test() output | 3 | Accepted |
+| [010](#adr-010) | Cluster level retained at collapsed commune key | 3 | Accepted |
 
 ---
 
@@ -235,7 +237,7 @@ correction applied anywhere else is a correction that will eventually be forgott
 - Establishes the working principle recorded from this episode: **a clean run is not a
   correct run.** Silent type coercion is now explicitly checked after every read.
 - Suppression codes become genuine missing values, which propagates into listwise deletion
-  and, ultimately, into ADR-related recertification of effective sample size.
+  and, ultimately, into the effective-N recertification issued at Stage 3.
 
 ---
 
@@ -313,6 +315,9 @@ cannot be estimated as written.
 - For models including the social index, this check is confounded by the definitional break
   documented in ADR-006, and must be caveated or omitted.
 - The panel survives for the descriptive outcome trend only.
+- **Update (Stage 3):** the adjacent-year stability check was not run. It is declared as a
+  limitation in the regression report, which means the withdrawn fixed-effects check has no
+  executed replacement and temporal stability of the coefficients remains unverified.
 
 ---
 
@@ -359,9 +364,119 @@ burying it in a methods note.
 - Effective information content is closer to the number of communes than the number of
   schools, which links the inference problem directly to the study's statistical power.
 - Adds a package dependency (`clubSandwich`).
+- **Correction (Stage 3):** the cluster count was estimated at approximately 1,393 when this
+  decision was taken. The realised figure on the commune key used for inference is 1,337.
+- **Realised (Stage 3):** cluster-robust standard errors rose 22–35% relative to classical
+  inference on the territorial predictors, and were barely affected for school sector, which
+  varies within communes. The asymmetry is the reason sector is estimated far more precisely
+  than any territorial variable.
 
 ---
 
 ## Appended at Stage 3 and beyond
 
 New decisions are appended below as later stages proceed. Existing entries are not edited.
+
+<a name="adr-009"></a>
+## ADR-009 — Coefficient tables built from `coef_test()` output
+
+**Status:** Accepted · **Stage:** 3
+
+### Context
+
+The publication coefficient tables were generated with `modelsummary`, passing the CR2
+cluster-robust variance estimator. Comparing the generated tables against the analyst's own
+diagnostic output revealed that the two disagreed on significance for six coefficients in
+the general track.
+
+The cause was not the standard errors. `modelsummary` applied the correct CR2 standard
+errors, but derived p-values from large-sample degrees of freedom rather than from the
+Satterthwaite approximation that CR2 inference requires. Under cluster-robust inference
+with heterogeneous cluster sizes, effective degrees of freedom can be far smaller than the
+cluster count, so large-sample p-values are too small.
+
+The six affected coefficients were precisely those already flagged as weakly identified —
+the discrepancy was concentrated exactly where it would do most damage.
+
+### Decision
+
+Tables are built directly from `clubSandwich::coef_test()` output, which returns
+Satterthwaite degrees of freedom alongside the CR2 standard errors. The table pipeline
+reads those values rather than recomputing significance.
+
+### Rationale
+
+A footnote stating that the reported p-values use large-sample degrees of freedom would be
+technically honest and practically useless: readers take significance markers at face
+value. The published artefact must be correct on its own terms.
+
+### Alternatives rejected
+
+- **Keeping the `modelsummary` output with an explanatory footnote** — the table would
+  still overstate significance on six coefficients for any reader who does not read
+  footnotes.
+- **Reporting classical p-values throughout for internal consistency** — abandons
+  cluster-robust inference, which ADR-008 establishes as necessary.
+
+### Consequences
+
+- Six general-track coefficients lose significance markers relative to the first generated
+  version of the tables. This is the correct result.
+- The table pipeline is more code and less package convenience.
+- Establishes a working principle carried forward: when two tools disagree about a number,
+  the disagreement is investigated before either is trusted — a generated table is an
+  output to be checked, not a result.
+
+---
+
+<a name="adr-010"></a>
+## ADR-010 — Cluster level retained at the collapsed commune key
+
+**Status:** Accepted · **Stage:** 3
+
+### Context
+
+During Stage 3 diagnostics, the median income coefficient returned approximately 5.0
+effective degrees of freedom out of 1,337 clusters. A variance inflation factor of 2.6
+ruled out collinearity as the cause.
+
+The cause traced back to ADR-003. The income source retains arrondissement granularity,
+while the clustering key collapses Paris, Lyon and Marseille to the parent city. That
+places 18 Paris arrondissements — spanning a median income range of roughly €22,870 to
+€45,380 — inside a single unit of information for inference purposes. A decision taken in
+Stage 1 to preserve real income variation resurfaced two stages later as a constraint on
+precision.
+
+Re-clustering on the finer key recovered effective degrees of freedom to 23.2. Every
+variable that varies within Paris gained degrees of freedom; the two variables joined on the
+collapsed key did not move at all.
+
+### Decision
+
+The headline specification retains the collapsed commune key as the cluster level. The
+re-clustered variant is reported as a diagnostic, not adopted as the baseline.
+
+### Rationale
+
+The collapsed key is the conservative choice: fewer, larger clusters produce wider standard
+errors. Selecting the cluster level that yields the more favourable result after seeing both
+would be specification search, whatever its technical justification.
+
+The gain in effective degrees of freedom is real, but it comes from treating arrondissements
+as independent units when the broadband and urban/rural predictors are constant across all
+of them by construction — the independence would be assumed, not established.
+
+### Alternatives rejected
+
+- **Adopting the finer cluster key as baseline** — chosen after observing that it improves
+  precision. Rejected on process grounds, not on technical ones.
+- **Excluding the three large cities** — removes a large share of the urban core from a
+  study of territorial inequality.
+
+### Consequences
+
+- Median income is weakly identified and is reported as such rather than as a null result.
+- Demonstrates that a join-level decision taken in data preparation can propagate into
+  inference two stages later. This is recorded as the clearest example in the project of why
+  the decision log exists.
+
