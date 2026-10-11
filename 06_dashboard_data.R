@@ -16,6 +16,12 @@ df_full <- read_rds("data/processed/df_full.rds")   # 2019-2024 panel
 nrow(df_reg)    # 4,340
 nrow(df_full)   # 60,743
 
+# Raw département-level Bac results (semicolon-delimited, French format)
+bac_dept <- read_csv2("data/raw/bac_par_departement_2023_2025.csv",
+                      show_col_types = FALSE)
+
+nrow(bac_dept)  # 1,818
+
 dir.create("output/dashboard_data", showWarnings = FALSE, recursive = TRUE)
 
 # ------------------------------------------------------------
@@ -30,6 +36,10 @@ dir.create("output/dashboard_data", showWarnings = FALSE, recursive = TRUE)
 # codes, not INSEE: zero-padded to three characters, with Corsica
 # as 620 / 720 rather than 2A / 2B. Converted below so Tableau can
 # match them geographically.
+#
+# Voie is mapped to the study's track definition: GT (Générale +
+# Technologique) vs Pro, so dashboard filters can be shared
+# across all views.
 # ------------------------------------------------------------
 
 bac_clean <- bac_dept |>
@@ -48,13 +58,14 @@ bac_clean <- bac_dept |>
       dept_raw == "720"            ~ "2B",
       str_starts(dept_raw, "97")   ~ dept_raw,
       .default = str_sub(dept_raw, 2, 3)
-    )
+    ),
+    track = if_else(voie == "Professionnelle", "Pro", "GT")
   ) |>
-  select(session, dept_code, dept_name, voie, genre, presents, admis)
+  select(session, dept_code, dept_name, track, voie, genre, presents, admis)
 
 # Check the conversion
 bac_clean |> distinct(dept_code) |> nrow()          # expect 101
-bac_clean |> filter(dept_code %in% c("2A", "2B", "01", "95", "971"))|>
+bac_clean |> filter(dept_code %in% c("2A", "2B", "01", "95", "971")) |>
   distinct(dept_code, dept_name)
 
 
@@ -67,12 +78,12 @@ dept_bac_all <- bac_clean |>
     .groups  = "drop"
   ) |>
   mutate(taux_reussite = admis / presents * 100,
-         voie          = "Toutes voies")
+         track         = "All tracks")
 
 
-# --- Split by track, per département and session ---
-dept_bac_voie <- bac_clean |>
-  group_by(session, dept_code, dept_name, voie) |>
+# --- By track (GT / Pro), per département and session ---
+dept_bac_track <- bac_clean |>
+  group_by(session, dept_code, dept_name, track) |>
   summarise(
     presents = sum(presents),
     admis    = sum(admis),
@@ -81,9 +92,11 @@ dept_bac_voie <- bac_clean |>
   mutate(taux_reussite = admis / presents * 100)
 
 
-# --- Stack both, so Tableau can filter "Toutes voies" or one track ---
-dept_bac <- bind_rows(dept_bac_all, dept_bac_voie) |>
-  arrange(session, dept_code, voie)
+# --- Stack both, so Tableau can filter "All tracks", GT or Pro ---
+dept_bac <- bind_rows(dept_bac_all, dept_bac_track) |>
+  arrange(session, dept_code, track)
+
+nrow(dept_bac)   # expect 909 = 101 départements x 3 sessions x 3 tracks
 
 
 # --- Sanity check: national rate should land around 90-93% ---
@@ -106,7 +119,7 @@ school_scatter <- df_reg |>
          urban_rural3, commune_final) |>
   filter(!is.na(IPS_mean), !is.na(DV2_taux))
 
-nrow(school_scatter)
+nrow(school_scatter)   # 4,324
 
 
 # --- trend.csv: national pass rate by year and track ---
