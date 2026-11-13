@@ -276,3 +276,34 @@ fibre figures describe communes, not households, and they come from 2024, not
 from the lockdown period. If digital access remains a policy concern, the next
 step is to measure it at the level of students and households, at the time it
 is meant to matter.
+
+## 6. Reproducibility
+
+Every number in this report can be rebuilt from the raw files with the scripts
+in the repository.
+
+**Software.** R 4.5.1, with the packages tidyverse, readxl, clubSandwich, car,
+lmtest and modelsummary. The dashboard was built in Tableau Public.
+
+**Data.** The nine source files are stored unchanged in `data/raw/`. All are
+public. The cleaned datasets in `data/processed/` are not stored; the scripts
+rebuild them.
+
+**Running the analysis.** Open `DA-FR-1.Rproj` and run the scripts in order:
+
+| Script | What it does |
+|---|---|
+| `01_reconnaissance.R` | Loads and inspects the nine raw files |
+| `02_build_join_inputs.R` | Cleans each source and prepares it for merging |
+| `03_execute_joins.R` | Merges the sources, creates the variables and saves the analysis datasets |
+| `04_eda.R` | Exploratory analysis and the Phase 2 figures |
+| `05_regression.R` | Models, diagnostics, robustness checks and coefficient tables |
+| `06_dashboard_data.R` | Exports the three files used by the Tableau dashboard |
+
+Figures are saved to `output/figures/`, coefficient tables to `output/tables/`
+and dashboard files to `output/dashboard_data/`.
+
+**Decisions.** Every analytical choice that shaped the results, from the
+urban/rural coding to the clustering of standard errors, is recorded with its
+reasoning in the decision log in `docs/`. The stage reports (`eda_report.md`,
+`regression_report.md` and earlier) document each phase as it was completed.
