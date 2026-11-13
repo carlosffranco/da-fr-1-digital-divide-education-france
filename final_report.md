@@ -241,3 +241,38 @@ the gap will show up in my results, and I cannot correct it.
   likeliest explanation for the fibre result.
 
 The fibre finding in particular should be read with this last gap in mind.
+
+## 5. Policy implications
+
+These implications follow from what the data show. They are limited by the
+design described in Section 4, and none of them rests on a causal claim.
+
+**1. Target support by who a school enrols, not by where it is.** Commune income,
+poverty, connectivity and urban/rural status together explain less than 2% of
+the differences in value-added between lycées. The social index of a school's
+students explains far more of the differences in pass rates. A policy that
+directs extra resources to lycées using territorial indicators alone would miss
+most of the schools whose students face the largest disadvantages. Indicators
+measured on the students themselves are the better signal.
+
+**2. Compare schools on value-added, not raw pass rates.** Raw pass rates mostly
+reflect intake. In GT, half of all lycées pass 97% or more of their candidates,
+so the raw figure barely separates them. Value-added already accounts for intake
+and leaves a fairer basis for comparison. Any public ranking or performance
+review of lycées should lead with value-added and present raw rates only as
+context.
+
+**3. Measure vocational intakes more fully.** In the vocational track, a single
+social index captures only part of how private and public lycées differ in the
+students they receive. Before drawing conclusions about the remaining gap of
+about 3 points in value-added, the Ministry would need richer intake data for
+Pro students, such as prior attainment and the route by which students entered
+the track.
+
+**4. Measure connectivity where students live before acting on it.** These data
+give no support to the idea that poorly connected communes have weaker lycée
+results. That is not the same as showing connectivity does not matter: the
+fibre figures describe communes, not households, and they come from 2024, not
+from the lockdown period. If digital access remains a policy concern, the next
+step is to measure it at the level of students and households, at the time it
+is meant to matter.
