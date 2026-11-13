@@ -1,5 +1,36 @@
 # Social composition, not territory, predicts Bac outcomes in France
 
+## Executive summary
+
+After the 2020 school closures, a common concern in France was that students in
+poorly connected areas would fall behind. This study tests that concern, and
+asks more broadly which socioeconomic and territorial factors predict
+Baccalauréat results across French lycées in 2023. It combines nine public
+datasets covering 4,340 lycée-track observations, and analyses the general (GT)
+and vocational (Pro) tracks separately.
+
+**Territory explains almost nothing.** Fibre coverage, income, poverty and
+urban/rural status together explain 1.9% of the differences in value-added
+between GT lycées and 0.4% in Pro.
+
+**Social composition explains a great deal.** Adding the social index of each
+school's students raises the explained share of pass rates from 1.9% to 44.1%
+in GT. Schools differ mainly because their students differ.
+
+**Private lycées do better, especially in Pro.** Public lycées have about 1.9
+points less value-added in GT and 3.3 points less in Pro. In Pro, roughly three
+quarters of the raw gap in pass rates reflects the students each sector enrols.
+
+**Fibre did not behave as expected.** Better-connected communes showed slightly
+lower value-added in GT, not higher. The effect is small, partly regional and
+not robust in Pro. I report it as unexplained.
+
+**What follows.** Support should be targeted by who a school enrols rather than
+where it is, and lycées should be compared on value-added rather than raw pass
+rates. The data give no support to broadband as a lever for lycée results, but
+they cannot rule out effects during the lockdown itself. Answering that would
+require connectivity measured for households, at the time of the closures.
+
 ## 1. Context and research question
 
 In spring 2020, French schools closed and teaching moved online. The
