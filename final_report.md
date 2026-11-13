@@ -195,3 +195,49 @@ differences between regions, not between communes.
 
 Three of four expectations held. The one that failed led to the most careful
 part of the analysis.
+
+## 4. Limitations
+
+**The fibre data come after the period they are meant to describe.** The ARCEP
+coverage figures are from late 2024. The school closures happened in 2020 and
+2021, and the outcomes are from 2023. Fibre rollout moved fast in those years, so
+a commune that is well connected today may not have been during the closures.
+The study can say whether current connectivity relates to recent results. It
+cannot say whether connectivity during lockdown mattered.
+
+**Income data lag by two years.** The Filosofi figures describe 2021, while the
+outcomes are from 2023. Commune income changes slowly, so this matters less than
+the fibre gap, but it is still a mismatch.
+
+**Commune data describe where the school is, not where its students live.** A
+lycée often draws students from several surrounding communes. Income, poverty
+and fibre are measured for the school's own commune only. This blurs the
+territorial variables and probably makes their effects look smaller than they
+are. The social index (IPS) does not have this problem, because it is measured
+on the students themselves. That difference may explain part of why IPS
+performs so much better.
+
+**The rural group is small.** Only 56 lycées (22 in GT) are in rural communes.
+I kept them as a separate category so that a rural effect could be measured at
+all, but the estimates for that group are imprecise.
+
+**This is a cross-section, not an experiment.** The main analysis uses one
+session (2023). It shows which school characteristics go together with better
+results, not what causes them. This applies in particular to the private-sector
+advantage: private lycées may differ from public ones in ways the data do not
+capture.
+
+**Value-added is the Ministry's own model.** I use the DEPP value-added figures
+as published. If that model leaves out part of what shapes a school's intake,
+the gap will show up in my results, and I cannot correct it.
+
+**Three planned checks were not run.**
+
+- Influence diagnostics (Cook's distance), to see whether a few schools drive
+  the estimates.
+- A comparison with adjacent years, to see whether the coefficients are stable
+  over time.
+- A continuous population-density control, which is the most direct test of the
+  likeliest explanation for the fibre result.
+
+The fibre finding in particular should be read with this last gap in mind.
