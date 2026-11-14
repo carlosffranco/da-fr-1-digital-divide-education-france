@@ -9,13 +9,14 @@ Baccalauréat results across French lycées in 2023. It combines nine public
 datasets covering 4,340 lycée-track observations, and analyses the general (GT)
 and vocational (Pro) tracks separately.
 
-**Territory explains almost nothing.** Fibre coverage, income, poverty and
+**Territory explains almost nothing about school value-added.** Fibre coverage, income, poverty and
 urban/rural status together explain 1.9% of the differences in value-added
 between GT lycées and 0.4% in Pro.
 
-**Social composition explains a great deal.** Adding the social index of each
-school's students raises the explained share of pass rates from 1.9% to 44.1%
-in GT. Schools differ mainly because their students differ.
+**Social composition explains a great deal.** Once the social index of each
+school's students is included, the model explains 44.1% of the differences in
+pass rates between GT lycées. Schools differ mainly because their students
+differ.
 
 **Private lycées do better, especially in Pro.** Public lycées have about 1.9
 points less value-added in GT and 3.3 points less in Pro. In Pro, roughly three
@@ -33,9 +34,8 @@ require connectivity measured for households, at the time of the closures.
 
 ## 1. Context and research question
 
-In spring 2020, French schools closed and teaching moved online. The
-baccalauréat exams were cancelled that year, and grades were awarded on
-continuous assessment. In 2021 the exams returned, but in a reduced form.
+In spring 2020, French schools closed and teaching moved online. 
+That year the baccalauréat was awarded on continuous assessment instead of final exams. In 2021 the exams returned, but in a reduced form.
 
 These disruptions raised a concern: students without good internet access at
 home might fall behind. If that were true, schools in poorly connected areas
@@ -144,9 +144,9 @@ model, and it held.
 
 ### 3.2 Who attends the school explains a great deal
 
-The raw pass rate tells a different story. Adding the school's social index
-(IPS) to the same territorial variables (Model B) raises the explained variation
-from 1.9% to 44.1% in GT, and from 0.4% to 17.6% in Pro. In GT, a lycée whose
+The raw pass rate tells a different story. Territorial variables alone explain
+little of it. Adding the school's social index (IPS) raises the explained
+variation to 44.1% in GT and 17.6% in Pro (Model B). In GT, a lycée whose
 students score 10 points higher on the index passes about 2 percentage points
 more of its candidates. This is the most precisely estimated relationship in the
 study.
@@ -221,7 +221,7 @@ differences between regions, not between communes.
 |---|---|
 | Territorial variables explain little of value-added in GT | Held (R² 1.9%) |
 | Territorial variables explain little of value-added in Pro | Held (R² 0.4%, jointly non-significant) |
-| The social index dominates the raw pass rate | Held (R² from 1.9% to 44.1% in GT) |
+| The social index dominates the raw pass rate | Held (R² 44.1% in GT, 17.6% in Pro) |
 | Fibre coverage is not significant | Did not hold in GT (small, negative); not robust in Pro |
 
 Three of four expectations held. The one that failed led to the most careful
