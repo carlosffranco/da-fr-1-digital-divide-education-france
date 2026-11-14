@@ -555,3 +555,33 @@ modelsummary(
   notes    = table_note,
   output   = "output/tables/coefficients_pro.md"
 )
+
+# ------------------------------------------------------------
+# T6 — MODEL B0: territorial-only baseline on the raw pass rate
+# Added in Phase 5 to quantify the sentence "territorial variables
+# alone explain little of the raw pass rate". Same sample as Model B,
+# so the two R² are directly comparable. Descriptive baseline only:
+# not pre-registered, not a headline model, no inference reported.
+# ------------------------------------------------------------
+
+# --- Model B0, GT: raw pass rate on territorial variables, no IPS ---
+model_B0_gt <- lm(DV2_taux ~ fibre_coverage + median_income +   # outcome and first two territorial predictors
+                    poverty_rate + urban_rural3,                 # remaining territorial predictors
+                  data = df_gt_B)                                # same GT rows used by Model B (2,237)
+
+# --- Model B0, Pro: same specification on the vocational track ---
+model_B0_pro <- lm(DV2_taux ~ fibre_coverage + median_income +  # outcome and first two territorial predictors
+                     poverty_rate + urban_rural3,                # remaining territorial predictors
+                   data = df_pro_B)                              # same Pro rows used by Model B (1,907)
+
+# --- R² side by side: territorial only (B0) vs with IPS (B) ---
+print(                                                           # forces the table to show when run with source()
+  tibble(                                                        # builds a small comparison table
+    track = c("GT", "Pro"),                                      # one row per track
+    n     = c(nobs(model_B0_gt), nobs(model_B0_pro)),            # sample size, must be 2237 and 1907
+    r2_B0 = round(c(summary(model_B0_gt)$r.squared,              # R² without IPS, GT
+                    summary(model_B0_pro)$r.squared), 3),        # R² without IPS, Pro
+    r2_B  = round(c(summary(model_B_gt)$r.squared,               # R² with IPS, GT (expect 0.441)
+                    summary(model_B_pro)$r.squared), 3)          # R² with IPS, Pro (expect 0.176)
+  )
+)

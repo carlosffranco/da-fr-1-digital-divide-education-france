@@ -13,10 +13,10 @@ and vocational (Pro) tracks separately.
 urban/rural status together explain 1.9% of the differences in value-added
 between GT lycées and 0.4% in Pro.
 
-**Social composition explains a great deal.** Once the social index of each
-school's students is included, the model explains 44.1% of the differences in
-pass rates between GT lycées. Schools differ mainly because their students
-differ.
+**Social composition explains a great deal.** Territorial variables alone explain
+9.1% of the differences in pass rates between GT lycées. Once the social index of
+each school's students is included, the model explains 44.1%. Schools differ
+mainly because their students differ.
 
 **Private lycées do better, especially in Pro.** Public lycées have about 1.9
 points less value-added in GT and 3.3 points less in Pro. In Pro, roughly three
@@ -145,9 +145,9 @@ model, and it held.
 ### 3.2 Who attends the school explains a great deal
 
 The raw pass rate tells a different story. Territorial variables alone explain
-little of it. Adding the school's social index (IPS) raises the explained
-variation to 44.1% in GT and 17.6% in Pro (Model B). In GT, a lycée whose
-students score 10 points higher on the index passes about 2 percentage points
+9.1% of it in GT and 5.2% in Pro. Adding the school's social index (IPS) raises
+the explained variation to 44.1% and 17.6% respectively (Model B, same schools).
+In GT, a lycée whose students score 10 points higher on the index passes about 2 percentage points
 more of its candidates. This is the most precisely estimated relationship in the
 study.
 
