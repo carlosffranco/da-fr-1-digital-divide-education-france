@@ -1,11 +1,10 @@
 # Digital Divide & Post-COVID Educational Inequality in France
 
 **Project code:** DA-FR-1 · **Analyst:** Carlos F. Franco
-**Status:** Stage 4 of 5 — Visualisation and dashboard, open and not yet started (last updated: September 2026)
+**Status:** Complete — all five stages (last updated: November 2026)
 
-> Stages 1 to 3 are complete and certified: the data pipeline, the exploratory analysis
-> and the regression results below are stable content. The dashboard, the OECD
-> benchmarking and the policy recommendations do not exist yet and are not claimed here.
+> The analysis is finished. The final report, the executive deck and the interactive
+> dashboard are linked under [Deliverables](#deliverables) below.
 
 ---
 
@@ -20,7 +19,7 @@ performance once student intake composition is accounted for.
 | Field | Value |
 |---|---|
 | Unit of analysis | Lycée (upper secondary school) |
-| Regression frame | 2023 cross-section, 4,340 schools (GT 2,331 / Pro 2,009) |
+| Regression frame | 2023 cross-section, 4,340 lycée-track observations (GT 2,331 / Pro 2,009) |
 | Descriptive panel | 2019–2024, 60,743 school-year observations |
 | Geography | France (metropolitan + overseas départements) |
 | Data sources | 9 public administrative datasets |
@@ -32,10 +31,23 @@ performance once student intake composition is accounted for.
 ## Headline result
 
 **Territorial conditions explain roughly 2% of the variation in lycée value-added.
-Social composition explains 44% of the raw pass rate.**
+On their own they explain 9.1% of the variation in the raw pass rate in the general
+track; once the school social index is included, the model explains 44.1%.**
 
 Post-COVID educational inequality in France, as measured here, lives in *who attends
 each school* — not in the municipality around it.
+
+---
+
+## Deliverables
+
+| Deliverable | Where |
+|---|---|
+| Final report | [`final_report.md`](final_report.md) |
+| Executive deck (PDF, 7 slides) | [`output/deck/DA-FR-1_deck.pdf`](output/deck/DA-FR-1_deck.pdf) |
+| Interactive dashboard | [Tableau Public](https://public.tableau.com/app/profile/carlos.oaxaca/viz/DA-FR-1SocialcompositionnotterritorypredictsBacoutcomesinFrance/Dashboard) |
+
+[![Dashboard with four views: pass rate against the school social index, the private–public gap by track, the pass-rate trend 2019–2024 and a map of pass rates by département](output/figures/p4_dashboard.png)](https://public.tableau.com/app/profile/carlos.oaxaca/viz/DA-FR-1SocialcompositionnotterritorypredictsBacoutcomesinFrance/Dashboard)
 
 ---
 
@@ -82,7 +94,7 @@ Five specifications, four of which are estimated across both tracks — eight es
 | **B** (secondary) | Raw Bac pass rate | Model A predictors + school social index (IPS) | ✅ Estimated |
 | **B+** | Raw Bac pass rate | Model B predictors + school sector | ✅ Estimated |
 | **A+** | IVAL value-added score | Model A predictors + school sector | ✅ Estimated |
-| **C** (descriptive) | Pass rate by département | mapping only | ⬜ Not started — Stage 4 |
+| **C** (descriptive) | Pass rate by département | mapping only | ✅ Delivered — département map in the dashboard |
 
 **Recertified effective N** (supersedes the Stage 1 figures):
 
@@ -124,27 +136,35 @@ alongside classical ones.
 | 1 — Data preparation and merge pipeline | ✅ Certified (effective-N erratum issued at Stage 3) |
 | 2 — Descriptive statistics and EDA | ✅ Complete and signed off |
 | 3 — Regression analysis | ✅ Complete and certified |
-| 4 — Visualisation and dashboard | ▶ Open, not started |
-| 5 — Reporting and communication | ⬜ Not started |
-
-**Not yet available:** Tableau dashboard, OECD benchmarking, executive deck, policy recommendations.
+| 4 — Visualisation and dashboard | ✅ Complete |
+| 5 — Reporting and communication | ✅ Complete |
 
 ---
 
 ## Results
 
 Full tables in `output/tables/` — four specifications per track, CR2 cluster-robust
-standard errors, Satterthwaite p-values, recertified N and R² in the footer. Full
-discussion in `regression_report.md`.
+standard errors, Satterthwaite p-values, recertified N and R² in the footer. The full
+narrative, the limitations and the four policy implications are in
+[`final_report.md`](final_report.md); the model-by-model detail is in
+[`regression_report.md`](regression_report.md).
 
 **1 — Territorial conditions do not explain lycée value-added.** Model A accounts for
 1.9% of variance in the general track and 0.4% in the vocational track, where it is not
 jointly significant (CR2 Wald p = 0.281). This outcome was declared in writing before
 estimation.
 
-**2 — Social composition dominates.** Adding the school social index raises explained
-variance from 1.9% to 44.1% in the general track, with a cluster-robust t-statistic of
-30.4 — the largest in the study by a wide margin.
+**2 — Social composition dominates.** Territorial variables alone explain 9.1% of the
+variance in the raw pass rate in the general track and 5.2% in the vocational track. Once
+the school social index is included, the model explains 44.1% and 17.6% respectively, on
+the same observations, with a cluster-robust t-statistic of 30.4 on the index in the
+general track — the largest in the study by a wide margin.
+
+The regression report states this result as a rise "from 1.9% to 44.1%". That comparison
+sets two different outcomes side by side: value-added in Model A and the raw pass rate in
+Model B. The final report corrects it. The figures above are the corrected ones: a
+territorial-only descriptive baseline (Model B0 in `05_regression.R`) against Model B,
+both on the raw pass rate.
 
 **3 — In the vocational track, most of the socioeconomic gradient runs along the
 public/private divide.** Adding sector reduces the social index coefficient by 64% in Pro
@@ -204,12 +224,14 @@ DA-FR-1/
 ├── 03_execute_joins.R         # merges, derives variables, writes .rds artefacts
 ├── 04_eda.R                   # Stage 2 exploratory analysis
 ├── 05_regression.R            # Stage 3 models, diagnostics, robustness, tables
+├── 06_dashboard_data.R        # Stage 4 — exports the three dashboard datasets
 │
 ├── intake_report.md           # Stage 1 Step 1 — signed off
 ├── join_readiness_report.md   # Stage 1 Step 2 — signed off
 ├── integrity_report.md        # Stage 1 Step 3 — certified, one figure superseded
 ├── eda_report.md              # Stage 2 — signed off
 ├── regression_report.md       # Stage 3 — certified
+├── final_report.md            # Stage 5 — final report
 │
 ├── docs/
 │   └── decision_log.md        # analytical decisions in ADR format
@@ -219,7 +241,10 @@ DA-FR-1/
 │   └── processed/             # generated artefacts — not versioned
 │
 └── output/
-    ├── figures/               # 13 figures, 300 dpi — versioned
+    ├── dashboard_data/        # three CSV files read by the dashboard
+    ├── deck/                  # executive deck, 7 slides (PDF)
+    ├── figures/               # 18 figures: 13 from Stage 2 (300 dpi), 5 dashboard captures — versioned
+    ├── tableau/               # Tableau Public workbook (.twbx)
     └── tables/                # coefficient tables, GT and Pro
 ```
 
@@ -242,11 +267,12 @@ the CR2 cluster-robust estimator; `car` and `lmtest` supply the diagnostic tests
 Run the scripts in order from a clean R session:
 
 ```
-01_reconnaissance.R  →  02_build_join_inputs.R  →  03_execute_joins.R  →  04_eda.R  →  05_regression.R
+01_reconnaissance.R  →  02_build_join_inputs.R  →  03_execute_joins.R  →  04_eda.R  →  05_regression.R  →  06_dashboard_data.R
 ```
 
 Scripts `02` and `03` regenerate all processed artefacts from the raw sources. No manual
-step is required at any point.
+step is required at any point in the R pipeline. The dashboard is the one exception: it
+was assembled by hand in Tableau Public from the three files that script `06` exports.
 
 **Versioning policy.** Raw source data is versioned to guarantee reproducibility and to
 preserve the exact snapshot the analysis was run on — several publishers overwrite their
@@ -272,7 +298,24 @@ has not been pushed is not backed up.
 | ARCEP MCI 2024T4 | ARCEP | FTTH broadband coverage by commune |
 | AAV 2020 | INSEE | Urban/rural classification |
 
-Licence terms per source: `[TO CONFIRM before public release]`
+**Licences.** All nine source files are published under the *Licence Ouverte / Open
+Licence 2.0* (Etalab), which allows reuse with attribution. The licence was checked for
+each source on 14 November 2026.
+
+| Source | File in `data/raw/` | Licence stated on |
+|---|---|---|
+| IVAL, general and technological | `ival_gt_lycees_2023.csv` | [dataset page](https://data.education.gouv.fr/explore/dataset/fr-en-indicateurs-de-resultat-des-lycees-gt_v2/), data.education.gouv.fr |
+| IVAL, vocational | `ival_pro_lycees_2023.csv` | [dataset page](https://data.education.gouv.fr/explore/dataset/fr-en-indicateurs-de-resultat-des-lycees-pro_v2/), data.education.gouv.fr |
+| IPS Lycées 2022 | `ips_Lycees_2022.csv` | [dataset page](https://data.education.gouv.fr/explore/dataset/fr-en-ips-lycees-ap2022/), data.education.gouv.fr |
+| IPS Lycées 2023 | `ips_Lycees_2023.csv` | [dataset page](https://data.education.gouv.fr/explore/dataset/fr-en-ips-lycees-ap2023/), data.education.gouv.fr |
+| Annuaire de l'éducation | `rep_annuaire_edu_V2.xlsx` | [dataset page](https://data.education.gouv.fr/explore/dataset/fr-en-annuaire-education/), data.education.gouv.fr |
+| Bac results by département | `bac_par_departement_2023_2025.csv` | [dataset page](https://data.education.gouv.fr/explore/dataset/fr-en-baccalaureat-par-departement/), data.education.gouv.fr |
+| Filosofi 2021 (COM) | `cc_filosofi_2021_COM.csv` | [INSEE legal notice](https://www.insee.fr/fr/information/2008466), which covers every file on insee.fr unless stated otherwise ([dataset page](https://www.insee.fr/fr/statistiques/7756855)) |
+| AAV 2020 | `aav2020_urban_rural.xlsx` | Same INSEE legal notice ([dataset page](https://www.insee.fr/fr/information/4803954)) |
+| ARCEP MCI 2024T4 | `arcep_mci_commune_2024T4.csv` | [dataset page](https://www.data.gouv.fr/datasets/ma-connexion-internet/), data.gouv.fr |
+
+Sources: DEPP and DNE (Ministère chargé de l'éducation nationale), Insee, Arcep. The
+files are stored unchanged, as added to this repository in June 2026.
 
 ---
 
@@ -284,6 +327,12 @@ mismatch between datasets, a three-level urban/rural recoding, the correction of
 numeric conversion failure caused by French decimal commas combined with INSEE
 statistical-secrecy codes, the choice of cluster level and estimator for inference, and the
 resolution of the p-value discrepancy in code.
+
+The *brief* is the project's design document, written at Stage 0 before any data was
+loaded: it fixed the research question, the model architecture and the planned checks.
+The *dataset guide*, which the decision log also cites, is the Stage 0 plan for acquiring
+and joining the sources. Both are internal planning documents and are not included in
+this repository.
 
 Full decision log: [`docs/decision_log.md`](docs/decision_log.md)
 
@@ -313,6 +362,12 @@ Three planned checks were **not run**, and are declared rather than omitted:
   panel fixed-effects check — so temporal stability of the coefficients is unverified.
 - **A continuous population-density control**, which would have tested the most plausible
   explanation for the broadband association reported in result 6.
+
+An OECD benchmarking comparison, planned at the design stage, was not carried out.
+
+The final report discusses these limitations in full and adds three: commune data describe
+where the school is and not where its students live, the design is a cross-section, and
+value-added is the Ministry's own model ([Section 4](final_report.md#4-limitations)).
 
 ---
 

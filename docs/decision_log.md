@@ -4,6 +4,12 @@ Substantive analytical decisions taken during execution, several of which depart
 the original case study brief. Each entry records the situation, the decision, the
 reasoning, the alternatives rejected, and the consequences accepted.
 
+Two documents are cited throughout. The *brief* is the project's design document, written
+at Stage 0 before any data was loaded: it fixed the research question, the model
+architecture and the planned checks. The *dataset guide* is the Stage 0 plan for acquiring
+and joining the sources. Both are internal planning documents and are not included in
+this repository.
+
 **This is an append-only record.** Entries are not rewritten as the project develops. A
 decision that is later reversed is marked `Superseded` and a new entry is added
 explaining why. The history of the reasoning is the point.
